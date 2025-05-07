@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <!-- Herencia del proyecto padre -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.4.5</version>
+    </parent>
+    <!-- Este debo pegar entodos los parent de los hijos -->
+    <groupId>com.hotel</groupId>    <!-- Identificador del grupo del proyecto (nombre de organización o dominio invertido) -->
+    <artifactId>hotel-microservices-system</artifactId> <!-- Nombre único del artefacto del proyecto padre -->
+    <version>1.0-SNAPSHOT</version>  <!-- Versión del proyecto -->
+    <!-- Nombre descriptivo del proyecto -->
+    <name>microservices-system</name>
+    <packaging>pom</packaging><!-- Datos del proyecto padre indicando que este solo es el contenedor del proyecto(no genera un JAR, sino que gestiona submódulos)-->
+
+    <!-- Hijos de este proyecto Aquí irán los nombres de las carpetas de los submódulos que generes con Maven-->
+    <modules>
+        <module>eureka-server</module>
+        <module>gateway</module>
+        <module>usuarios</module>
+    </modules>
+
+    <!-- Configuración del compilador y codificación -->
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding><!-- Define la codificación estándar de los archivos fuente -->
+        <maven.compiler.source>17</maven.compiler.source><!-- Versión de Java usada para compilar el proyecto -->
+        <maven.compiler.target>17</maven.compiler.target>
+    </properties>
+    <!-- Lombok permite reducir el código repetitivo como getters y setters -->
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.38</version>
+        </dependency>
+    </dependencies>
+    <!-- Plugin para ejecutar la aplicación como un JAR con Spring Boot -->
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.springframework.boot</groupId>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                    <version>3.4.5</version>
+                </plugin>
+            </plugins>
+
+        </pluginManagement>
+    </build>
+</project>

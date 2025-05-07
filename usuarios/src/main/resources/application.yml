@@ -1,0 +1,28 @@
+server:
+  port: 8502
+
+spring:
+  application:
+    name: usuarios
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/usuariosProyecto?useSSL=false&serverTimezone=UTC
+    username: root
+    password: abc123.
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  # ddl-auto: valitade Solo valida que las entidades coincidan con la estructura de la BD. Si falta una tabla o columna, lanza error. No cambia nada.
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8500/eureka/
+  instance:
+    hostname: localhost
+    prefer-ip-address: true
