@@ -21,6 +21,7 @@
         <module>eureka-server</module>
         <module>gateway</module>
         <module>usuarios</module>
+        <module>reservas</module>
     </modules>
 
     <!-- Configuración del compilador y codificación -->

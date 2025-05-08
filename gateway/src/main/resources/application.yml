@@ -3,7 +3,8 @@ server:
 
 spring:
   application:
-    name: gateway  # Nombre con el que se registra en Eureka
+    # Nombre con el que se registra en Eureka
+    name: gateway
 
   cloud:
     gateway:
@@ -11,21 +12,21 @@ spring:
         routes:
           - id: usuarios
             #Para gateway enrute din?micamente usando Eureka, usamos balanceo de carga (lb://) en lugar de URIs fijas.
-            uri: lb://usuarios  # Nombre del microservicio 'usuarios' registrado en Eureka
+            uri: lb://USUARIOS  # Nombre del microservicio 'usuarios' registrado en Eureka
             #uri: http://localhost:8502  # Direcci?n del microservicio 'usuarios'
             predicates:
               - Path=/usuarios/**
 
           - id: reservas
             #Para gateway enrute din?micamente usando Eureka, usamos balanceo de carga (lb://) en lugar de URIs fijas.
-            uri: lb://reservas  # Nombre del microservicio 'reservas' registrado en Eureka
+            uri: lb://RESERVAS  # Nombre del microservicio 'reservas' registrado en Eureka
             #uri: http://localhost:8501  # Direcci?n del microservicio 'reservas'
             predicates:
               - Path=/reservas/**
 
           - id: comentarios
             #Para gateway enrute din?micamente usando Eureka, usamos balanceo de carga (lb://) en lugar de URIs fijas.
-            uri: lb://comentarios  # Nombre del microservicio 'comentarios' registrado en Eureka
+            uri: lb://COMENTARIOS  # Nombre del microservicio 'comentarios' registrado en Eureka
             #uri: http://localhost:8503  # Direcci?n del microservicio 'comentarios'
             predicates:
               - Path=/comentarios/**

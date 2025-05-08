@@ -14,7 +14,7 @@
 	<artifactId>eureka-server</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>eureka-server</name>
-	<description>Microservicio de gestión de usuarios</description>
+	<description>Servidor Eureka del sistema de reservas</description>
 	<url/>
 	<licenses>
 		<license/>
