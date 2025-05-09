@@ -57,6 +57,13 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		<!-- Proveedor de implementación de Jakarta Validation (necesario para evitar el warning) -->
+		<dependency>
+			<groupId>org.hibernate.validator</groupId>
+			<artifactId>hibernate-validator</artifactId>
+		</dependency>
+
 	</dependencies>
 	<!-- Importa un conjunto coordinado de versiones para las dependencias de Spring Cloud -->
 	<dependencyManagement>

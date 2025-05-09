@@ -84,6 +84,8 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
+		
 	</dependencies>
 	<!-- Gestión centralizada de versiones para dependencias de Spring Cloud -->
 	<dependencyManagement>

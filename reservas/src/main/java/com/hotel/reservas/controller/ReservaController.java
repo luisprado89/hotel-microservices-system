@@ -54,14 +54,17 @@ public class ReservaController {
 
 
     // Endpoint para obtener reservas por su estado usando credenciales de usuario y contraseña
-    @GetMapping("/estado")
-    public List<ReservaUsuarioDTO> listarReservasSegunEstado(@RequestParam String estado,
-                                         @RequestBody UsuarioDTO usuario) {
+    @GetMapping("/estado/{estado}")
+    public List<ReservaUsuarioDTO> listarReservasSegunEstado(
+            @PathVariable String estado,
+            @RequestBody UsuarioDTO usuario) {
+
         if (!usuariosRestClient.validarCredenciales(usuario.getNombre(), usuario.getContrasena())) {
-            return List.of();
+            return List.of();  // o lanzar una excepción si se prefiere
         }
         return reservaService.listarReservasSegunEstado(estado);
     }
+
 
 
     // Endpoint para verificar si una reserva existe por ID de usuario, ID de hotel y ID de reserva
