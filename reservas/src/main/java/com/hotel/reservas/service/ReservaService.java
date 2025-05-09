@@ -22,14 +22,23 @@ public class ReservaService { // Clase de servicio para manejar la lógica de ne
     // Inyección de dependencias para el cliente REST de usuarios
     @Autowired
     private UsuariosRestClient usuariosRestClient;
-    // Constructor de la clase
-    public String crearReserva(Reserva reserva) {
+    //Metodo para crear una reserva
+    public String crearReserva(Reserva reserva, String nombreUsuario) {
         Optional<Habitacion> habitacion = habitacionRepository.findById(reserva.getHabitacion().getId());
         if (habitacion.isEmpty() || !habitacion.get().getDisponible()) {
             return "Habitación no disponible";
         }
 
+        // Obtener ID del usuario a partir del nombre
+        Integer usuarioId = usuariosRestClient.obtenerIdUsuarioPorNombre(nombreUsuario);
+        if (usuarioId == null) {
+            return "No se pudo obtener el ID del usuario";
+        }
+
+        // Asignar el usuarioId
+        reserva.setUsuarioId(usuarioId);
         reserva.setHabitacion(habitacion.get());
+
         try {
             reservaRepository.save(reserva);
             return "Reserva creada correctamente";

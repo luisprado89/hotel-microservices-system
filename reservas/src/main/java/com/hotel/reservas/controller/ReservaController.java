@@ -1,5 +1,6 @@
 package com.hotel.reservas.controller;
 
+import com.hotel.reservas.dto.CambiarEstadoDTO;
 import com.hotel.reservas.dto.ReservaDTO;
 import com.hotel.reservas.dto.ReservaUsuarioDTO;
 import com.hotel.reservas.dto.UsuarioDTO;
@@ -28,19 +29,17 @@ public class ReservaController {
         if (!usuariosRestClient.validarCredenciales(dto.getUsuario().getNombre(), dto.getUsuario().getContrasena())) {
             return "Credenciales incorrectas";
         }
-        return reservaService.crearReserva(dto.getReserva());
+        return reservaService.crearReserva(dto.getReserva(), dto.getUsuario().getNombre());
     }
 
 
     // Endpoint para actualizar una reserva usando credenciales de usuario y contraseña
     @PatchMapping
-    public String cambiarEstado(@RequestParam Integer reservaId,
-                                @RequestParam String estado,
-                                @RequestBody UsuarioDTO usuario) {
-        if (!usuariosRestClient.validarCredenciales(usuario.getNombre(), usuario.getContrasena())) {
+    public String cambiarEstado(@RequestBody CambiarEstadoDTO dto) {
+        if (!usuariosRestClient.validarCredenciales(dto.getUsuario().getNombre(), dto.getUsuario().getContrasena())) {
             return "Credenciales incorrectas";
         }
-        return reservaService.cambiarEstado(reservaId, estado);
+        return reservaService.cambiarEstado(dto.getReservaId(), dto.getEstado());
     }
 
 
