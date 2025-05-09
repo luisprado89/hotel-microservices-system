@@ -1,6 +1,7 @@
 package com.hotel.reservas.controller;
 
 import com.hotel.reservas.dto.HotelDTO;
+import com.hotel.reservas.dto.UsuarioDTO;
 import com.hotel.reservas.service.HotelService;
 import com.hotel.reservas.service.UsuariosRestClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,32 +38,28 @@ public class HotelController {
     // Endpoint para eliminar un hotel por su ID usando credenciales de usuario y contraseña
     @DeleteMapping("/{id}")
     public String eliminarHotel(@PathVariable Integer id,
-                                @RequestParam String nombre,
-                                @RequestParam String contrasena) {
-        if (!usuariosRestClient.validarCredenciales(nombre, contrasena)) {
+                                @RequestBody UsuarioDTO usuario) {
+        if (!usuariosRestClient.validarCredenciales(usuario.getNombre(), usuario.getContrasena())) {
             return "Credenciales incorrectas";
         }
         return hotelService.eliminarHotel(id);
     }
+
     // Endpoint para obtener un hotel por su ID usando credenciales de usuario y contraseña
     @PostMapping("/id")
-    public String obtenerIdApartirNombre(@RequestParam String hotelNombre,
-                                         @RequestParam String nombre,
-                                         @RequestParam String contrasena) {
-        if (!usuariosRestClient.validarCredenciales(nombre, contrasena)) {
+    public String obtenerIdApartirNombre(@RequestBody HotelDTO dto) {
+        if (!usuariosRestClient.validarCredenciales(dto.getUsuario().getNombre(), dto.getUsuario().getContrasena())) {
             return "Credenciales incorrectas";
         }
-        return hotelService.obtenerIdApartirNombre(hotelNombre);
+        return hotelService.obtenerIdApartirNombre(dto.getNombre()); // El nombre del hotel va en dto.getNombre()
     }
 
     // Endpoint para verificar si un hotel existe por su ID usando credenciales de usuario y contraseña
     @PostMapping("/nombre")
-    public String obtenerNombreAPartirId(@RequestParam Integer hotelId,
-                                         @RequestParam String nombre,
-                                         @RequestParam String contrasena) {
-        if (!usuariosRestClient.validarCredenciales(nombre, contrasena)) {
+    public String obtenerNombreAPartirId(@RequestBody HotelDTO dto) {
+        if (!usuariosRestClient.validarCredenciales(dto.getUsuario().getNombre(), dto.getUsuario().getContrasena())) {
             return "Credenciales incorrectas";
         }
-        return hotelService.obtenerNombreAPartirId(hotelId);
+        return hotelService.obtenerNombreAPartirId(dto.getId()); // El id del hotel va en dto.getId()
     }
 }

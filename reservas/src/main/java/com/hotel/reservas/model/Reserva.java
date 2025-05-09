@@ -20,7 +20,7 @@ public class Reserva {
     @Column(name = "usuario_id")
     private Integer usuarioId;
 
-    @ManyToOne
+    @ManyToOne//(cascade = CascadeType.ALL) //En caso de que se elimine el hotel, se eliminarán las reservas asociadas
     @JoinColumn(name = "habitacion_id", nullable = false)
     private Habitacion habitacion;
 

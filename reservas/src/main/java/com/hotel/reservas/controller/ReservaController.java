@@ -1,5 +1,8 @@
 package com.hotel.reservas.controller;
 
+import com.hotel.reservas.dto.ReservaDTO;
+import com.hotel.reservas.dto.ReservaUsuarioDTO;
+import com.hotel.reservas.dto.UsuarioDTO;
 import com.hotel.reservas.model.Reserva;
 import com.hotel.reservas.service.ReservaService;
 import com.hotel.reservas.service.UsuariosRestClient;
@@ -21,13 +24,11 @@ public class ReservaController {
 
     // Endpoint para crear una nueva reserva usando credenciales de usuario y contraseña
     @PostMapping
-    public String crearReserva(@RequestBody Reserva reserva,
-                               @RequestParam String nombre,
-                               @RequestParam String contrasena) {
-        if (!usuariosRestClient.validarCredenciales(nombre, contrasena)) {
+    public String crearReserva(@RequestBody ReservaDTO dto) {
+        if (!usuariosRestClient.validarCredenciales(dto.getUsuario().getNombre(), dto.getUsuario().getContrasena())) {
             return "Credenciales incorrectas";
         }
-        return reservaService.crearReserva(reserva);
+        return reservaService.crearReserva(dto.getReserva());
     }
 
 
@@ -35,9 +36,8 @@ public class ReservaController {
     @PatchMapping
     public String cambiarEstado(@RequestParam Integer reservaId,
                                 @RequestParam String estado,
-                                @RequestParam String nombre,
-                                @RequestParam String contrasena) {
-        if (!usuariosRestClient.validarCredenciales(nombre, contrasena)) {
+                                @RequestBody UsuarioDTO usuario) {
+        if (!usuariosRestClient.validarCredenciales(usuario.getNombre(), usuario.getContrasena())) {
             return "Credenciales incorrectas";
         }
         return reservaService.cambiarEstado(reservaId, estado);
@@ -46,25 +46,22 @@ public class ReservaController {
 
     // Endpoint para obtener una reserva por su ID usando credenciales de usuario y contraseña
     @GetMapping
-    public List<Reserva> listarPorUsuario(@RequestParam Integer usuarioId,
-                                          @RequestParam String nombre,
-                                          @RequestParam String contrasena) {
-        if (!usuariosRestClient.validarCredenciales(nombre, contrasena)) {
-            return List.of(); // vacío si no es válido
+    public List<ReservaUsuarioDTO> listarReservasUsuario(@RequestBody UsuarioDTO usuario) {
+        if (!usuariosRestClient.validarCredenciales(usuario.getNombre(), usuario.getContrasena())) {
+            return List.of();
         }
-        return reservaService.listarReservasPorUsuario(usuarioId);
+        return reservaService.listarReservasUsuario(usuario.getNombre());
     }
 
 
     // Endpoint para obtener reservas por su estado usando credenciales de usuario y contraseña
     @GetMapping("/estado")
-    public List<Reserva> listarPorEstado(@RequestParam String estado,
-                                         @RequestParam String nombre,
-                                         @RequestParam String contrasena) {
-        if (!usuariosRestClient.validarCredenciales(nombre, contrasena)) {
+    public List<ReservaUsuarioDTO> listarReservasSegunEstado(@RequestParam String estado,
+                                         @RequestBody UsuarioDTO usuario) {
+        if (!usuariosRestClient.validarCredenciales(usuario.getNombre(), usuario.getContrasena())) {
             return List.of();
         }
-        return reservaService.listarReservasPorEstado(estado);
+        return reservaService.listarReservasSegunEstado(estado);
     }
 
 

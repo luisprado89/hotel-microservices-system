@@ -1,6 +1,7 @@
 package com.hotel.reservas.controller;
 
 import com.hotel.reservas.dto.HabitacionDTO;
+import com.hotel.reservas.dto.UsuarioDTO;
 import com.hotel.reservas.service.HabitacionService;
 import com.hotel.reservas.service.UsuariosRestClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,9 +38,8 @@ public class HabitacionController {
     // Endpoint para obtener una habitación por su ID usando credenciales de usuario y contraseña
     @DeleteMapping("/{id}")
     public String eliminarHabitacion(@PathVariable Integer id,
-                                     @RequestParam String nombre,
-                                     @RequestParam String contrasena) {
-        if (!usuariosRestClient.validarCredenciales(nombre, contrasena)) {
+                                     @RequestBody UsuarioDTO usuario) {
+        if (!usuariosRestClient.validarCredenciales(usuario.getNombre(), usuario.getContrasena())) {
             return "Credenciales incorrectas";
         }
         return habitacionService.eliminarHabitacion(id);

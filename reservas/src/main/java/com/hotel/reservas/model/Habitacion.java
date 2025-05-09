@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @Entity // Indica que esta clase es una entidad JPA
 @Data // Lombok generará automáticamente los métodos getters y setters
@@ -17,7 +18,7 @@ public class Habitacion {
     @Column(name = "habitacion_id")
     private Integer id;
 
-    @ManyToOne
+    @ManyToOne//(cascade = CascadeType.ALL) // En caso de que se elimine el hotel, se eliminarán las habitaciones asociadas
     @JoinColumn(name = "hotel_id", nullable = false)
     private Hotel hotel;
 
@@ -30,4 +31,7 @@ public class Habitacion {
     private BigDecimal precio;
 
     private Boolean disponible;
+    //Esto le dice a Hibernate: “Cuando se elimine una Habitacion, elimina también sus Reservas”.
+    @OneToMany(mappedBy = "habitacion", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Reserva> reservas;
 }

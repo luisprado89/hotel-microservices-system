@@ -15,9 +15,7 @@ public class HotelService {
     // Inyección de dependencias para el repositorio de hoteles
     @Autowired
     private HotelRepository hotelRepository;
-    // Inyección de dependencias para el repositorio de habitaciones
-    @Autowired
-    private HabitacionRepository habitacionRepository;
+
 
     // Constructor de la clase
     public String crearHotel(HotelDTO dto) {
@@ -55,18 +53,20 @@ public class HotelService {
     }
 
     // Método para eliminar un hotel por su ID
-    @Transactional
+    @Transactional // Anotación que indica que este método es transaccional
     public String eliminarHotel(Integer idHotel) {
-        if (!hotelRepository.existsById(idHotel)) {
+        Optional<Hotel> hotelOpt = hotelRepository.findById(idHotel);
+        if (hotelOpt.isEmpty()) {
             return "Hotel no encontrado";
         }
 
         try {
-            // 1. Eliminar todas las habitaciones del hotel
-            habitacionRepository.deleteByHotel_Id(idHotel);
+            Hotel hotel = hotelOpt.get();
 
-            // 2. Eliminar el hotel
-            hotelRepository.deleteById(idHotel);
+            // Forzar la carga de las habitaciones (y por cascada, sus reservas)
+            hotel.getHabitaciones().size();
+
+            hotelRepository.delete(hotel);
             return "Hotel eliminado correctamente";
         } catch (Exception e) {
             e.printStackTrace();

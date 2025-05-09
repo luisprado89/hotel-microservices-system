@@ -30,4 +30,16 @@ public class UsuariosRestClient { // Clase que se encarga de validar las credenc
             return false;   // Devuelve false si ocurre un error
         }
     }
+
+    // Obtener ID del usuario por su nombre (GET /usuarios/info/nombre/{nombre})
+    public Integer obtenerIdUsuarioPorNombre(String nombre) {
+        String url = baseUrl + "/usuarios/info/nombre/" + nombre;
+
+        try {
+            return restTemplate.getForObject(url, Integer.class);
+        } catch (Exception e) {
+            System.out.println("Error al obtener ID del usuario: " + e.getMessage());
+            return null;
+        }
+    }
 }

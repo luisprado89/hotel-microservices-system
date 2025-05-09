@@ -1,5 +1,6 @@
 package com.hotel.reservas.service;
 
+import com.hotel.reservas.dto.ReservaUsuarioDTO;
 import com.hotel.reservas.model.Habitacion;
 import com.hotel.reservas.model.Reserva;
 import com.hotel.reservas.repository.HabitacionRepository;
@@ -18,43 +19,59 @@ public class ReservaService { // Clase de servicio para manejar la lógica de ne
     // Inyección de dependencias para el repositorio de habitaciones
     @Autowired
     private HabitacionRepository habitacionRepository;
+    // Inyección de dependencias para el cliente REST de usuarios
+    @Autowired
+    private UsuariosRestClient usuariosRestClient;
     // Constructor de la clase
     public String crearReserva(Reserva reserva) {
-        Optional<Habitacion> habitacion = habitacionRepository
-                .findById(reserva.getHabitacion().getId());
-        if (habitacion.isEmpty() || !habitacion.get().getDisponible()) {// Verificar si la habitación existe y está disponible
+        Optional<Habitacion> habitacion = habitacionRepository.findById(reserva.getHabitacion().getId());
+        if (habitacion.isEmpty() || !habitacion.get().getDisponible()) {
             return "Habitación no disponible";
         }
 
-        reserva.setHabitacion(habitacion.get());// Asignar la habitación a la reserva
-
+        reserva.setHabitacion(habitacion.get());
         try {
-            reservaRepository.save(reserva); // Guardar la reserva en la base de datos
+            reservaRepository.save(reserva);
             return "Reserva creada correctamente";
         } catch (Exception e) {
+            e.printStackTrace();
             return "Error al crear la reserva";
         }
     }
+
     // Método para cambiar el estado de una reserva
     public String cambiarEstado(Integer reservaId, String estado) {
-        Optional<Reserva> reserva = reservaRepository.findById(reservaId); // Buscar la reserva por su ID
-        if (reserva.isEmpty()) {    // Verificar si la reserva existe
+        Optional<Reserva> reserva = reservaRepository.findById(reservaId);
+        if (reserva.isEmpty()) {
             return "Reserva no encontrada";
         }
-        reserva.get().setEstado(estado); // Cambiar el estado de la reserva
+        reserva.get().setEstado(estado);
         try {
-            reservaRepository.save(reserva.get());  // Guardar la reserva actualizada en la base de datos
+            reservaRepository.save(reserva.get());
             return "Estado de reserva actualizado";
         } catch (Exception e) {
+            e.printStackTrace();
             return "Error al cambiar estado";
         }
     }
+
+
     // Método para listar reservas por ID de usuario
-    public List<Reserva> listarReservasPorUsuario(Integer usuarioId) {
-        return reservaRepository.findByUsuarioId(usuarioId);
+    public List<ReservaUsuarioDTO> listarReservasUsuario(String nombreUsuario) {
+        Integer usuarioId = usuariosRestClient.obtenerIdUsuarioPorNombre(nombreUsuario);
+        if (usuarioId == null) {
+            return List.of();
+        }
+
+        return reservaRepository.findByUsuarioId(usuarioId).stream()
+                .map(reserva -> new ReservaUsuarioDTO(
+                        reserva.getFechaInicio(),
+                        reserva.getFechaFin(),
+                        reserva.getHabitacion().getId()))
+                .toList();
     }
     // Método para listar reservas por estado
-    public List<Reserva> listarReservasPorEstado(String estado) {
+    public List<ReservaUsuarioDTO> listarReservasSegunEstado(String estado) {
         return reservaRepository.findByEstado(estado);
     }
     // Método para verificar si una reserva existe por ID de usuario, ID de hotel y ID de reserva

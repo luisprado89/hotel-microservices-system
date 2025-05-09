@@ -20,9 +20,7 @@ public class HabitacionService {
     // Inyección de dependencias para el repositorio de hoteles
     @Autowired
     private HotelRepository hotelRepository;
-    // Inyección de dependencias para el repositorio de reservas
-    @Autowired
-    private ReservaRepository reservaRepository;
+
 
     // Constructor de la clase
     public String crearHabitacion(HabitacionDTO dto) {
@@ -75,20 +73,19 @@ public class HabitacionService {
             return "Error al actualizar la habitación";
         }
     }
+
     // Método para eliminar una habitación por su ID
-    //Método transaccional para eliminar habitación
-    @Transactional
+    @Transactional //Método transaccional para eliminar habitación
     public String eliminarHabitacion(Integer id) {
-        if (!habitacionRepository.existsById(id)) {
+        Optional<Habitacion> habitacionOpt = habitacionRepository.findById(id);
+        if (habitacionOpt.isEmpty()) {
             return "Habitación no encontrada";
         }
+
         try {
-            // Primero elimina las reservas asociadas a esta habitación
-            reservaRepository.deleteByHabitacionId(id);
-
-            // Luego elimina la habitación
-            habitacionRepository.deleteById(id);
-
+            Habitacion habitacion = habitacionOpt.get();
+            habitacion.getReservas().size(); // fuerza carga de reservas
+            habitacionRepository.delete(habitacion);
             return "Habitación eliminada correctamente";
         } catch (Exception e) {
             e.printStackTrace();
