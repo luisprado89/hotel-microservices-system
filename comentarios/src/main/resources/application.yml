@@ -1,0 +1,26 @@
+server:
+  port: 8503
+
+spring:
+  application:
+    name: comentarios
+
+  data:
+    mongodb:
+      uri: mongodb://localhost:27017/comentariosProyecto
+
+  graphql:
+    path: /comentarios       # Endpoint donde se expondr� la API GraphQL
+    graphiql:
+      enabled: true          # Habilita la consola gr�fica de pruebas
+      path: /graphiql  # <- este valor DEBE SER /graphiql
+      #path: /comentarios     # La interfaz GraphiQL se abrir� en esta ruta
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8500/eureka
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true

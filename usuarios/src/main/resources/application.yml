@@ -5,6 +5,9 @@ spring:
   application:
     name: usuarios
 
+    graphql:
+      path: /usuarios  # Esto es obligatorio para evitar conflicto en el gateway
+
   datasource:
     url: jdbc:mysql://localhost:3306/usuariosProyecto?useSSL=false&serverTimezone=UTC
     username: root

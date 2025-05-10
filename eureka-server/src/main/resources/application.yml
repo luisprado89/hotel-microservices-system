@@ -6,6 +6,8 @@ spring:
     name: eureka-server
 
 eureka:
+  instance:
+    hostname: localhost
   client:
     register-with-eureka: false  # Este servidor NO se registra a s? mismo
     fetch-registry: false        # No necesita obtener el registro de otros

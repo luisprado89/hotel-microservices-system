@@ -1,0 +1,29 @@
+type ComentarioResponse {
+  nombreHotel: String
+  reservaId: Int
+  puntuacion: Float
+  comentario: String
+}
+
+input ComentarioInput {
+  nombreUsuario: String!
+  contrasena: String!
+  nombreHotel: String!
+  reservaId: Int!
+  puntuacion: Float!
+  comentario: String!
+}
+
+type Query {
+  listarComentariosUsuario(nombreUsuario: String!, contrasena: String!): [ComentarioResponse]
+  listarComentariosHotel(nombreHotel: String!): [ComentarioResponse]
+  mostrarComentarioUsuarioReserva(nombreUsuario: String!, contrasena: String!, reservaId: Int!): [ComentarioResponse]
+  puntuacionMediaHotel(nombreHotel: String!): Float
+  puntuacionesMediasUsuario(nombreUsuario: String!, contrasena: String!): Float
+}
+
+type Mutation {
+  crearComentario(input: ComentarioInput!): ComentarioResponse
+  eliminarComentarios: String
+  eliminarComentarioDeUsuario(id: ID!): String
+}

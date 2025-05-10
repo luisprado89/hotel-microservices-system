@@ -22,6 +22,7 @@
         <module>gateway</module>
         <module>usuarios</module>
         <module>reservas</module>
+        <module>comentarios</module>
     </modules>
 
     <!-- Configuración del compilador y codificación -->
