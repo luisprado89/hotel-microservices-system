@@ -2,6 +2,7 @@ package com.hotel.comentarios.resolver;
 
 import com.hotel.comentarios.dto.ComentarioInput;
 import com.hotel.comentarios.dto.ComentarioResponse;
+import com.hotel.comentarios.dto.EliminarComentarioInput;
 import com.hotel.comentarios.service.ComentarioService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.graphql.data.method.annotation.Argument;
@@ -28,4 +29,10 @@ public class ComentarioMutation {
     public String eliminarComentarioDeUsuario(@Argument String id) {
         return comentarioService.eliminarPorId(id);
     }
+
+    @MutationMapping
+    public String eliminarComentarioAutenticado(@Argument EliminarComentarioInput input) {
+        return comentarioService.eliminarPorIdAutenticado(input);
+    }
+
 }

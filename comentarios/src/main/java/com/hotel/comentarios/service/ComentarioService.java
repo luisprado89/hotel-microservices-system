@@ -2,9 +2,13 @@ package com.hotel.comentarios.service;
 
 import com.hotel.comentarios.dto.ComentarioInput;
 import com.hotel.comentarios.dto.ComentarioResponse;
+import com.hotel.comentarios.dto.EliminarComentarioInput;
 import com.hotel.comentarios.model.Comentario;
 import com.hotel.comentarios.repository.ComentarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -26,7 +30,9 @@ public class ComentarioService {
     public ComentarioResponse crearComentario(ComentarioInput input) {
         // Validar usuario
         int usuarioId = obtenerUsuarioId(input.getNombreUsuario(), input.getContrasena());
-        int hotelId = obtenerHotelId(input.getNombreHotel());
+
+        // Obtener ID del hotel con credenciales
+        int hotelId = obtenerHotelId(input.getNombreHotel(), input.getNombreUsuario(), input.getContrasena());
 
         // Verificar si la reserva existe
         if (!checkReserva(usuarioId, hotelId, input.getReservaId())) {
@@ -35,8 +41,6 @@ public class ComentarioService {
 
         // Verificar si ya existe un comentario para esa combinación
         if (comentarioRepository.existsByUsuarioIdAndHotelIdAndReservaId(usuarioId, hotelId, input.getReservaId())) {
-
-
             throw new RuntimeException("Ya existe un comentario para esta reserva.");
         }
 
@@ -60,17 +64,48 @@ public class ComentarioService {
     }
 
     public String eliminarTodos() {
-        comentarioRepository.deleteAll();
-        return "Todos los comentarios han sido eliminados correctamente.";
+        try {
+            comentarioRepository.deleteAll();
+            return "Todos los comentarios han sido eliminados correctamente.";
+        } catch (Exception e) {
+            e.printStackTrace(); // imprime en consola
+            return "Error al eliminar los comentarios: " + e.getMessage();
+        }
     }
 
+    //Eliminar un comentario por ID del comentario que es un string
+    //eliminarComentarioDeUsuario
     public String eliminarPorId(String id) {
+        if (!comentarioRepository.existsById(id)) {
+            return "Error: El comentario no existe.";
+        }
+
         comentarioRepository.deleteById(id);
         return "Comentario eliminado correctamente.";
     }
+    //Eliminar un comentario por ID del comentario que es un string
+    //eliminarComentarioDeUsuario en el caso de pida usuario y contraseña sino podemos eliminarlo
+    public String eliminarPorIdAutenticado(EliminarComentarioInput input) {
+        Integer usuarioId = obtenerUsuarioId(input.getNombreUsuario(), input.getContrasena());
 
-    public List<ComentarioResponse> obtenerComentariosPorHotel(String nombreHotel) {
-        Integer hotelId = obtenerHotelId(nombreHotel);
+        Optional<Comentario> comentarioOpt = comentarioRepository.findById(input.getId());
+        if (comentarioOpt.isEmpty()) {
+            return "Error: El comentario no existe.";
+        }
+
+        Comentario comentario = comentarioOpt.get();
+        if (comentario.getUsuarioId() != usuarioId) {
+            return "Error: No tienes permiso para eliminar este comentario.";
+        }
+
+        comentarioRepository.deleteById(input.getId());
+        return "Comentario eliminado correctamente.";
+    }
+
+
+
+    public List<ComentarioResponse> obtenerComentariosPorHotel(String nombreHotel, String nombreUsuario, String contrasena) {
+        Integer hotelId = obtenerHotelId(nombreHotel, nombreUsuario, contrasena);
         return comentarioRepository.findByHotelId(hotelId).stream()
                 .map(c -> new ComentarioResponse(
                         nombreHotel,
@@ -80,11 +115,12 @@ public class ComentarioService {
                 .collect(Collectors.toList());
     }
 
+
     public List<ComentarioResponse> obtenerComentariosPorUsuario(String nombreUsuario, String contrasena) {
         Integer usuarioId = obtenerUsuarioId(nombreUsuario, contrasena);
         return comentarioRepository.findByUsuarioId(usuarioId).stream()
                 .map(c -> new ComentarioResponse(
-                        obtenerNombreHotel(c.getHotelId()),
+                        obtenerNombreHotel(c.getHotelId(), nombreUsuario, contrasena),
                         c.getReservaId(),
                         c.getPuntuacion(),
                         c.getComentario()))
@@ -100,15 +136,15 @@ public class ComentarioService {
 
         return comentarioOpt
                 .map(c -> List.of(new ComentarioResponse(
-                        obtenerNombreHotel(c.getHotelId()),
+                        obtenerNombreHotel(c.getHotelId(), nombreUsuario, contrasena),
                         c.getReservaId(),
                         c.getPuntuacion(),
                         c.getComentario())))
                 .orElse(List.of());
     }
 
-    public Double mediaHotel(String nombreHotel) {
-        Integer hotelId = obtenerHotelId(nombreHotel);
+    public Double mediaHotel(String nombreHotel, String nombreUsuario, String contrasena) {
+        Integer hotelId = obtenerHotelId(nombreHotel, nombreUsuario, contrasena);
         List<Comentario> comentarios = comentarioRepository.findByHotelId(hotelId);
 
         return comentarios.isEmpty() ? 0.0 :
@@ -117,6 +153,7 @@ public class ComentarioService {
                         .average()
                         .orElse(0.0);
     }
+
 
     public Double mediaUsuario(String nombreUsuario, String contrasena) {
         Integer usuarioId = obtenerUsuarioId(nombreUsuario, contrasena);
@@ -150,17 +187,39 @@ public class ComentarioService {
         );
     }
 
-    private Integer obtenerHotelId(String nombreHotel) {
-        return restTemplate.postForObject(
-                RESERVAS_URL + "/hotel/id?nombre=" + nombreHotel,
-                null,
-                Integer.class
+    private Integer obtenerHotelId(String nombreHotel, String nombreUsuario, String contrasena) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HotelDTO dto = new HotelDTO(nombreHotel, new UsuarioDTO(nombreUsuario, contrasena));
+
+        HttpEntity<HotelDTO> request = new HttpEntity<>(dto, headers);
+
+        String resultado = restTemplate.postForObject(
+                RESERVAS_URL + "/hotel/id",
+                request,
+                String.class
         );
+
+        try {
+            return Integer.parseInt(resultado);
+        } catch (NumberFormatException e) {
+            throw new RuntimeException("Respuesta inválida al obtener hotel: " + resultado);
+        }
     }
 
-    private String obtenerNombreHotel(Integer hotelId) {
-        return restTemplate.getForObject(
-                RESERVAS_URL + "/hotel/nombre/" + hotelId,
+    private String obtenerNombreHotel(Integer hotelId, String nombreUsuario, String contrasena) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        HotelDTO dto = new HotelDTO(null, new UsuarioDTO(nombreUsuario, contrasena));
+        dto.id = hotelId;
+
+        HttpEntity<HotelDTO> request = new HttpEntity<>(dto, headers);
+
+        return restTemplate.postForObject(
+                RESERVAS_URL + "/hotel/nombre",
+                request,
                 String.class
         );
     }
@@ -181,4 +240,16 @@ public class ComentarioService {
 
     // DTO interno para validación de usuario
     record UsuarioDTO(String nombre, String contrasena) {}
+
+    // DTO interno para solicitud a /hotel/id y /hotel/nombre
+    static class HotelDTO {
+        public Integer id;
+        public String nombre;
+        public UsuarioDTO usuario;
+
+        public HotelDTO(String nombre, UsuarioDTO usuario) {
+            this.nombre = nombre;
+            this.usuario = usuario;
+        }
+    }
 }

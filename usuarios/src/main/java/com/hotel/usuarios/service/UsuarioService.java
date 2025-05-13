@@ -10,7 +10,7 @@ import java.util.Optional;
 
 @Service
 public class UsuarioService {
-
+    // Inyeccion de dependencias para el repositorio de usuarios
     @Autowired
     private UsuarioRepository repo;
     // Metodo para registrar un nuevo usuario
@@ -49,12 +49,14 @@ public class UsuarioService {
         return repo.findByNombreAndContrasena(nombre, contrasena).isPresent();
     }
     // Metodo para obtener el nombre de un usuario por su ID
-    public String obtenerNombrePorId(Integer id) {
+    public String obtenerInfoUsuarioPorId(Integer id) {
         return repo.findById(id).map(Usuario::getNombre).orElse("Usuario no encontrado");
     }
     // Metodo para obtener el ID de un usuario por su nombre
-    public String obtenerIdPorNombre(String nombre) {
-        return repo.findByNombre(nombre).map(u -> String.valueOf(u.getId())).orElse("Usuario no encontrado");
+    public String obtenerInfoUsuarioPorNombre(String nombre) {
+        return repo.findByNombre(nombre)
+                .map(u -> String.valueOf(u.getId()))
+                .orElse("Usuario no encontrado");
     }
     // Metodo para verificar si un usuario existe por su ID
     public boolean checkIfExist(Integer id) {

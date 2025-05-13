@@ -1,29 +1,50 @@
+# Tipo de dato que representa la respuesta cuando se devuelve un comentario.
 type ComentarioResponse {
-  nombreHotel: String
-  reservaId: Int
-  puntuacion: Float
-  comentario: String
+  nombreHotel: String         # Nombre del hotel donde se hizo la reserva
+  reservaId: Int              # ID de la reserva asociada al comentario
+  puntuacion: Float           # Puntuación que el usuario dio
+  comentario: String          # Texto del comentario
 }
 
+# Entrada para crear un nuevo comentario.
 input ComentarioInput {
-  nombreUsuario: String!
-  contrasena: String!
-  nombreHotel: String!
-  reservaId: Int!
-  puntuacion: Float!
-  comentario: String!
+  nombreUsuario: String!      # Nombre del usuario que hace el comentario
+  contrasena: String!         # Contraseña del usuario para autenticación
+  nombreHotel: String!        # Nombre del hotel sobre el que se comenta
+  reservaId: Int!             # ID de la reserva a la que pertenece el comentario
+  puntuacion: Float!          # Puntuación otorgada al hotel
+  comentario: String!         # Texto del comentario
 }
 
+# Consultas que se pueden hacer al sistema.
 type Query {
+  # Lista todos los comentarios realizados por un usuario autenticado
   listarComentariosUsuario(nombreUsuario: String!, contrasena: String!): [ComentarioResponse]
-  listarComentariosHotel(nombreHotel: String!): [ComentarioResponse]
+  # Lista todos los comentarios hechos a un hotel (requiere autenticación)
+  listarComentariosHotel(nombreHotel: String!, nombreUsuario: String!, contrasena: String!): [ComentarioResponse]
+  # Muestra el comentario que un usuario hizo para una reserva específica
   mostrarComentarioUsuarioReserva(nombreUsuario: String!, contrasena: String!, reservaId: Int!): [ComentarioResponse]
-  puntuacionMediaHotel(nombreHotel: String!): Float
+  # Muestra la puntuación media de un hotel, requiere nombre del hotel y credenciales
+  puntuacionMediaHotel(nombreHotel: String!, nombreUsuario: String!, contrasena: String!): Float
+  # Muestra la puntuación media de todos los comentarios hechos por un usuario autenticado
   puntuacionesMediasUsuario(nombreUsuario: String!, contrasena: String!): Float
 }
 
+# Mutaciones que permiten modificar los datos.
 type Mutation {
+  # Permite crear un nuevo comentario validando usuario y reserva
   crearComentario(input: ComentarioInput!): ComentarioResponse
+  # Elimina todos los comentarios del sistema (sin autenticación)
   eliminarComentarios: String
+  # Elimina un comentario específico por su ID del comentario (sin autenticación de usuario y contraseña)
   eliminarComentarioDeUsuario(id: ID!): String
+  # Elimina un comentario por su ID del comentario y validando usuario y contraseña
+  eliminarComentarioAutenticado(input: EliminarComentarioInput!): String
+}
+
+# Entrada para eliminar un comentario validando al usuario.
+input EliminarComentarioInput {
+  id: ID!                     # ID del comentario a eliminar
+  nombreUsuario: String!      # Nombre del usuario que quiere eliminar su comentario
+  contrasena: String!         # Contraseña del usuario para autenticación
 }

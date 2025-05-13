@@ -13,4 +13,4 @@ eureka:
     fetch-registry: false        # No necesita obtener el registro de otros
   server:
     enable-self-preservation: false  # Para evitar problemas en entornos de desarrollo
-    peer-eureka-nodes: http://localhost:8500/eureka/  # evita que busque en 8761
+    peer-eureka-nodes: ""  # <- esto sí desactiva los peers, indicando que no hay ninguno (cadena vacía) es válida y elimina el intento de replicación al puerto 8761.

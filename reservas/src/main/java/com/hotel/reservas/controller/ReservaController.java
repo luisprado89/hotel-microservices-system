@@ -5,6 +5,7 @@ import com.hotel.reservas.dto.ReservaDTO;
 import com.hotel.reservas.dto.ReservaUsuarioDTO;
 import com.hotel.reservas.dto.UsuarioDTO;
 import com.hotel.reservas.model.Reserva;
+import com.hotel.reservas.repository.ReservaRepository;
 import com.hotel.reservas.service.ReservaService;
 import com.hotel.reservas.service.UsuariosRestClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,10 @@ public class ReservaController {
     // Inyección de dependencias para el cliente REST de usuarios
     @Autowired
     private UsuariosRestClient usuariosRestClient;
+    // Inyección de dependencias para el repositorio de reservas para que comentarios pueda acceder
+    @Autowired
+    private ReservaRepository reservaRepository;
+
 
 
     // Endpoint para crear una nueva reserva usando credenciales de usuario y contraseña
@@ -77,4 +82,14 @@ public class ReservaController {
                                 @RequestParam Integer idReserva) {
         return reservaService.checkReserva(idUsuario, idHotel, idReserva);
     }
+    // Se usa en el microservicio de comentarios.
+    // Endpoint para obtener el ID del hotel desde la reserva para el Microservicio-Comentarios-->> mostrarComentarioUsuarioReserva
+    @GetMapping("/hotel/idReserva/{idReserva}")
+    public Integer obtenerHotelIdDesdeReserva(@PathVariable Integer idReserva) {
+        Reserva reserva = reservaRepository.findById(idReserva)
+                .orElseThrow(() -> new RuntimeException("Reserva no encontrada"));
+
+        return reserva.getHabitacion().getHotel().getId(); // o según cómo esté estructurado tu modelo
+    }
+
 }

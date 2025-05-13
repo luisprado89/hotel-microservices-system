@@ -30,6 +30,8 @@ spring:
             #uri: http://localhost:8503  # Direcci?n del microservicio 'comentarios'
             predicates:
               - Path=/comentarios/**
+            filters:
+              - RewritePath=/comentarios/(?<segment>.*), /${segment}  # Reescribe la URL para que no incluya '/comentarios' al enrutar a los microservicios
 
 # Configuracion para conectarse al servidor Eureka
 eureka:

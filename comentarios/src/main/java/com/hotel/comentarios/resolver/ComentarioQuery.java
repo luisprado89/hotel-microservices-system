@@ -21,9 +21,10 @@ public class ComentarioQuery {
     }
 
     @QueryMapping
-    public List<ComentarioResponse> listarComentariosHotel(@Argument String nombreHotel) {
-        return comentarioService.obtenerComentariosPorHotel(nombreHotel);
+    public List<ComentarioResponse> listarComentariosHotel(@Argument String nombreHotel, @Argument String nombreUsuario, @Argument String contrasena) {
+        return comentarioService.obtenerComentariosPorHotel(nombreHotel, nombreUsuario, contrasena);
     }
+
 
     @QueryMapping
     public List<ComentarioResponse> mostrarComentarioUsuarioReserva(@Argument String nombreUsuario, @Argument String contrasena, @Argument Integer reservaId) {
@@ -31,9 +32,10 @@ public class ComentarioQuery {
     }
 
     @QueryMapping
-    public Double puntuacionMediaHotel(@Argument String nombreHotel) {
-        return comentarioService.mediaHotel(nombreHotel);
+    public Double puntuacionMediaHotel(@Argument String nombreHotel, @Argument String nombreUsuario, @Argument String contrasena) {
+        return comentarioService.mediaHotel(nombreHotel, nombreUsuario, contrasena);
     }
+
 
     @QueryMapping
     public Double puntuacionesMediasUsuario(@Argument String nombreUsuario, @Argument String contrasena) {

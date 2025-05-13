@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequestMapping("/usuarios") // URL base para los endpoints, La ruta raíz de la API
 public class UsuarioController {
-
+    // Inyección de dependencias del servicio de usuario
     @Autowired
     private UsuarioService service;
 
@@ -37,13 +37,13 @@ public class UsuarioController {
     }
     // Endpoint para obtener el nombre de un usuario por su ID
     @GetMapping("/info/id/{id}")
-    public String obtenerNombre(@PathVariable Integer id) {
-        return service.obtenerNombrePorId(id);
+    public String obtenerInfoUsuarioPorId(@PathVariable Integer id) {
+        return service.obtenerInfoUsuarioPorId(id);
     }
     // Endpoint para obtener el ID de un usuario por su nombre
     @GetMapping("/info/nombre/{nombre}")
-    public String obtenerId(@PathVariable String nombre) {
-        return service.obtenerIdPorNombre(nombre);
+    public String obtenerInfoUsuarioPorNombre(@PathVariable String nombre) {
+        return service.obtenerInfoUsuarioPorNombre(nombre);
     }
     // Endpoint para verificar si un usuario existe por su ID
     @GetMapping("/checkIfExist/{id}")
