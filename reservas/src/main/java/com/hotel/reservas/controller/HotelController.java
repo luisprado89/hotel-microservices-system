@@ -25,7 +25,7 @@ public class HotelController {
         }
         return hotelService.crearHotel(dto);
     }
-
+    //PATCH puede implicar actualización parcial no esta obligado a actualizar todos los campos
     // Endpoint para actualizar un hotel usando credenciales de usuario y contraseña
     @PatchMapping
     public String actualizarHotel(@RequestBody HotelDTO dto) {
@@ -45,21 +45,23 @@ public class HotelController {
         return hotelService.eliminarHotel(id);
     }
 
-    // Endpoint para obtener un hotel por su ID usando credenciales de usuario y contraseña
-    @PostMapping("/id")
-    public String obtenerIdApartirNombre(@RequestBody HotelDTO dto) {
-        if (!usuariosRestClient.validarCredenciales(dto.getUsuario().getNombre(), dto.getUsuario().getContrasena())) {
+    // Endpoint para obtener un hotel por su ID a partir del nombre y usando credenciales de usuario y contraseña
+    @PostMapping("/id/{nombreHotel}")
+    public String obtenerIdApartirNombre(@PathVariable String nombreHotel, @RequestBody UsuarioDTO usuario) {
+        if (!usuariosRestClient.validarCredenciales(usuario.getNombre(), usuario.getContrasena())) {
             return "Credenciales incorrectas";
         }
-        return hotelService.obtenerIdApartirNombre(dto.getNombre()); // El nombre del hotel va en dto.getNombre()
+        return hotelService.obtenerIdApartirNombre(nombreHotel);
     }
 
+
     // Endpoint para verificar si un hotel existe por su ID usando credenciales de usuario y contraseña
-    @PostMapping("/nombre")
-    public String obtenerNombreAPartirId(@RequestBody HotelDTO dto) {
-        if (!usuariosRestClient.validarCredenciales(dto.getUsuario().getNombre(), dto.getUsuario().getContrasena())) {
+    @PostMapping("/nombre/{idHotel}")
+    public String obtenerNombreAPartirId(@PathVariable Integer idHotel, @RequestBody UsuarioDTO usuario) {
+        if (!usuariosRestClient.validarCredenciales(usuario.getNombre(), usuario.getContrasena())) {
             return "Credenciales incorrectas";
         }
-        return hotelService.obtenerNombreAPartirId(dto.getId()); // El id del hotel va en dto.getId()
+        return hotelService.obtenerNombreAPartirId(idHotel);
     }
+
 }

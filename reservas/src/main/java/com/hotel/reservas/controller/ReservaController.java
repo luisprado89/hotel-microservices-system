@@ -9,7 +9,9 @@ import com.hotel.reservas.repository.ReservaRepository;
 import com.hotel.reservas.service.ReservaService;
 import com.hotel.reservas.service.UsuariosRestClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 
@@ -47,19 +49,22 @@ public class ReservaController {
         return reservaService.cambiarEstado(dto.getReservaId(), dto.getEstado());
     }
 
-
+    //Aunque el enunciado no dice que devuelva mensaje de error de credenciales incorrectas lo pongo para no recibir un objeto vacio
     // Endpoint para obtener una reserva por su ID usando credenciales de usuario y contraseña
     @GetMapping
     public List<ReservaUsuarioDTO> listarReservasUsuario(@RequestBody UsuarioDTO usuario) {
         if (!usuariosRestClient.validarCredenciales(usuario.getNombre(), usuario.getContrasena())) {
-            return List.of();
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales incorrectas");//Si se prefiere lanzar una excepción en lugar de devolver un objeto vacío sino comentamos este o lo eliminamos
+            //return List.of(); si se prefiere no mostrar el mensaje de error de credenciales incorrectas se descomenta este
         }
         return reservaService.listarReservasUsuario(usuario.getNombre());
     }
 
 
+
+
     // Endpoint para obtener reservas por su estado usando credenciales de usuario y contraseña
-    @GetMapping("/estado/{estado}")
+    @GetMapping("/{estado}")
     public List<ReservaUsuarioDTO> listarReservasSegunEstado(
             @PathVariable String estado,
             @RequestBody UsuarioDTO usuario) {

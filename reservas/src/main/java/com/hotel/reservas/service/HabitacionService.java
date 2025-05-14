@@ -47,16 +47,56 @@ public class HabitacionService {
 
 
     // Método para actualizar una habitación
+//    public String actualizarHabitacion(HabitacionDTO dto) {
+//        if (dto.getId() == null || !habitacionRepository.existsById(dto.getId())) {
+//            return "Habitación no encontrada";
+//        }
+//
+//        Optional<Hotel> hotelOpt = hotelRepository.findById(dto.getIdHotel());
+//        if (hotelOpt.isEmpty()) {
+//            return "Hotel no encontrado";
+//        }
+//
+//        Habitacion habitacion = new Habitacion();
+//        habitacion.setId(dto.getId());
+//        habitacion.setHotel(hotelOpt.get());
+//        habitacion.setNumeroHabitacion(dto.getNumeroHabitacion());
+//        habitacion.setTipo(dto.getTipo());
+//        habitacion.setPrecio(dto.getPrecio());
+//        habitacion.setDisponible(dto.getDisponible());
+//
+//        try {
+//            habitacionRepository.save(habitacion);
+//            return "Habitación actualizada correctamente";
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return "Error al actualizar la habitación";
+//        }
+//    }
+    // Método para actualizar una habitación que obliga a pasar todos los campos
     public String actualizarHabitacion(HabitacionDTO dto) {
-        if (dto.getId() == null || !habitacionRepository.existsById(dto.getId())) {
+        // Validar que todos los campos estén completos
+        if (dto.getId() == null ||
+                dto.getNumeroHabitacion() == null ||
+                dto.getTipo() == null || dto.getTipo().isBlank() ||
+                dto.getPrecio() == null ||
+                dto.getIdHotel() == null ||
+                dto.getDisponible() == null) {
+            return "Error al actualizar la habitación: datos incompletos";
+        }
+
+        // Verificar si la habitación existe
+        if (!habitacionRepository.existsById(dto.getId())) {
             return "Habitación no encontrada";
         }
 
+        // Verificar si el hotel existe
         Optional<Hotel> hotelOpt = hotelRepository.findById(dto.getIdHotel());
         if (hotelOpt.isEmpty()) {
             return "Hotel no encontrado";
         }
 
+        // Construir y guardar la entidad actualizada
         Habitacion habitacion = new Habitacion();
         habitacion.setId(dto.getId());
         habitacion.setHotel(hotelOpt.get());
@@ -73,6 +113,9 @@ public class HabitacionService {
             return "Error al actualizar la habitación";
         }
     }
+
+
+
 
     // Método para eliminar una habitación por su ID
     @Transactional //Método transaccional para eliminar habitación

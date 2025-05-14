@@ -18,7 +18,27 @@ public class HotelService {
 
 
     // Constructor de la clase
+//    public String crearHotel(HotelDTO dto) {
+//        Hotel hotel = new Hotel();
+//        hotel.setNombre(dto.getNombre());
+//        hotel.setDireccion(dto.getDireccion());
+//
+//        try {
+//            hotelRepository.save(hotel);
+//            return "Hotel creado correctamente";
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//            return "Error al crear el hotel";
+//        }
+//    }
+    // Metodo para crear un nuevo hotel obligando a que el nombre y la dirección no estén vacíos
     public String crearHotel(HotelDTO dto) {
+        // Validar que los campos no estén vacíos
+        if (dto.getNombre() == null || dto.getNombre().isBlank() ||
+                dto.getDireccion() == null || dto.getDireccion().isBlank()) {
+            return "Error al crear el hotel: nombre o dirección incompletos";
+        }
+
         Hotel hotel = new Hotel();
         hotel.setNombre(dto.getNombre());
         hotel.setDireccion(dto.getDireccion());
@@ -32,6 +52,7 @@ public class HotelService {
         }
     }
 
+    //PATCH puede implicar actualización parcial no esta obligado a actualizar todos los campos
     // Método para actualizar un hotel
     public String actualizarHotel(HotelDTO dto) {
         if (dto.getId() == null || !hotelRepository.existsById(dto.getId())) {

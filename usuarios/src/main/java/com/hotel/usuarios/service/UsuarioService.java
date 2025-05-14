@@ -14,7 +14,23 @@ public class UsuarioService {
     @Autowired
     private UsuarioRepository repo;
     // Metodo para registrar un nuevo usuario
+//    public String crearUsuario(Usuario u) {
+//        try {
+//            repo.save(u);
+//            return "Usuario registrado correctamente";
+//        } catch (Exception e) {
+//            return "Error al registrar usuario";
+//        }
+//    }
     public String crearUsuario(Usuario u) {
+        if (u == null ||
+                u.getNombre() == null || u.getNombre().isBlank() ||
+                u.getCorreoElectronico() == null || u.getCorreoElectronico().isBlank() ||
+                u.getDireccion() == null || u.getDireccion().isBlank() ||
+                u.getContrasena() == null || u.getContrasena().isBlank()) {
+            return "Error al registrar usuario: datos incompletos";
+        }
+
         try {
             repo.save(u);
             return "Usuario registrado correctamente";
@@ -22,7 +38,9 @@ public class UsuarioService {
             return "Error al registrar usuario";
         }
     }
-  // Metodo para actualizar un usuario
+
+
+    // Metodo para actualizar un usuario
     public String actualizarUsuario(Usuario u) {
         if (u.getId() == null || !repo.existsById(u.getId())) {
             return "Usuario no encontrado";
