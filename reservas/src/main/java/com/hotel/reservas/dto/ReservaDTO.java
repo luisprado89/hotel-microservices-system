@@ -5,6 +5,9 @@ import lombok.Data;
 
 @Data
 public class ReservaDTO {
-    private Reserva reserva;
-    private UsuarioDTO usuario;
+    // DTO usado para crear una nueva reserva
+    // Usado en:
+    // - POST /reservas → crearReserva()
+    private Reserva reserva; // Contiene fechaInicio, fechaFin y habitacion (con ID)
+    private UsuarioDTO usuario;  // Usa nombre y contrasena de UsuarioDTO, se usa para validar credenciales del usuario
 }

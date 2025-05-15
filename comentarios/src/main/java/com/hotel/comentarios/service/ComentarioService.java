@@ -27,6 +27,7 @@ public class ComentarioService {
     private static final String USUARIOS_URL = "http://localhost:8080/usuarios";
     private static final String RESERVAS_URL = "http://localhost:8080/reservas";
 
+    //Método para crear un comentario -> Usado en: ComentarioMutation.crearComentario(...)
     public ComentarioResponse crearComentario(ComentarioInput input) {
         // Validar usuario
         int usuarioId = obtenerUsuarioId(input.getNombreUsuario(), input.getContrasena());
@@ -34,13 +35,18 @@ public class ComentarioService {
         // Obtener ID del hotel con credenciales
         int hotelId = obtenerHotelId(input.getNombreHotel(), input.getNombreUsuario(), input.getContrasena());
 
-        // Verificar si la reserva existe
+        // Verificar si la reserva existe, el Metodo está más abajo
         if (!checkReserva(usuarioId, hotelId, input.getReservaId())) {
             throw new RuntimeException("Reserva no válida.");
         }
 
-        // Verificar si ya existe un comentario para esa combinación
+/**        Si el usuario ya hizo un comentario sobre esa combinación (idUsuario - idHotel - idReserva) no se podrá realizar el comentario.
+        // Verificar si ya existe un comentario para esa combinación    */
         if (comentarioRepository.existsByUsuarioIdAndHotelIdAndReservaId(usuarioId, hotelId, input.getReservaId())) {
+            System.out.println("Intento de comentar con combinación ya existente:");
+            System.out.println("usuarioId: " + usuarioId);
+            System.out.println("hotelId: " + hotelId);
+            System.out.println("reservaId: " + input.getReservaId());
             throw new RuntimeException("Ya existe un comentario para esta reserva.");
         }
 
@@ -63,6 +69,7 @@ public class ComentarioService {
         );
     }
 
+    //Método para eliminar todos los comentarios -> Usado en: ComentarioMutation.eliminarComentarios()
     public String eliminarTodos() {
         try {
             comentarioRepository.deleteAll();
@@ -73,8 +80,10 @@ public class ComentarioService {
         }
     }
 
-    //Eliminar un comentario por ID del comentario que es un string
-    //eliminarComentarioDeUsuario
+    /**
+     * //Eliminar un comentario por ID del comentario que es un string(sin autenticación). ->  Usado en: ComentarioMutation.eliminarComentarioDeUsuario(id)
+     * //eliminarComentarioDeUsuario
+     */
     public String eliminarPorId(String id) {
         if (!comentarioRepository.existsById(id)) {
             return "Error: El comentario no existe.";
@@ -83,8 +92,11 @@ public class ComentarioService {
         comentarioRepository.deleteById(id);
         return "Comentario eliminado correctamente.";
     }
-    //Eliminar un comentario por ID del comentario que es un string
-    //eliminarComentarioDeUsuario en el caso de pida usuario y contraseña sino podemos eliminarlo
+
+    /**
+     * Eliminar un comentario por ID del comentario que es un string -> Usado en: ComentarioMutation.eliminarComentarioAutenticado(...)
+     * eliminarComentarioDeUsuario en el caso de que pida usuario y contraseña sino podemos eliminarlo
+     */
     public String eliminarPorIdAutenticado(EliminarComentarioInput input) {
         Integer usuarioId = obtenerUsuarioId(input.getNombreUsuario(), input.getContrasena());
 
@@ -101,9 +113,11 @@ public class ComentarioService {
         comentarioRepository.deleteById(input.getId());
         return "Comentario eliminado correctamente.";
     }
+// -------------------- CONSULTAS --------------------
 
-
-
+    /**
+     * //Métodos para obtener comentarios de un hotel , validando credenciales del usuario. -> Usado en: ComentarioQuery.listarComentariosHotel(...)
+     */
     public List<ComentarioResponse> obtenerComentariosPorHotel(String nombreHotel, String nombreUsuario, String contrasena) {
         Integer hotelId = obtenerHotelId(nombreHotel, nombreUsuario, contrasena);
         return comentarioRepository.findByHotelId(hotelId).stream()
@@ -115,7 +129,9 @@ public class ComentarioService {
                 .collect(Collectors.toList());
     }
 
-
+    /**
+     * //Métodos para obtener comentarios de un usuario -> Usado en: ComentarioQuery.listarComentariosUsuario(...)
+     */
     public List<ComentarioResponse> obtenerComentariosPorUsuario(String nombreUsuario, String contrasena) {
         Integer usuarioId = obtenerUsuarioId(nombreUsuario, contrasena);
         return comentarioRepository.findByUsuarioId(usuarioId).stream()
@@ -127,6 +143,10 @@ public class ComentarioService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * // DTO interno para solicitud a /hotel/id y /hotel/nombre  para enviar información de hotel y usuario al microservicio reservas
+     * //Métodos para obtener comentarios de un usuario por reserva específica. -> Usado en: ComentarioQuery.mostrarComentarioUsuarioReserva(...)
+     */
     public List<ComentarioResponse> obtenerComentarioDeReserva(String nombreUsuario, String contrasena, Integer reservaId) {
         Integer usuarioId = obtenerUsuarioId(nombreUsuario, contrasena);
         Integer hotelId = obtenerHotelIdDesdeReserva(reservaId);
@@ -143,6 +163,9 @@ public class ComentarioService {
                 .orElse(List.of());
     }
 
+    /**
+     * //Métodos para obtener la media de puntuaciones de un hotel de todos los comentarios hechos a un hotel. -> Usado en: ComentarioQuery.puntuacionMediaHotel(...)
+     */
     public Double mediaHotel(String nombreHotel, String nombreUsuario, String contrasena) {
         Integer hotelId = obtenerHotelId(nombreHotel, nombreUsuario, contrasena);
         List<Comentario> comentarios = comentarioRepository.findByHotelId(hotelId);
@@ -154,7 +177,9 @@ public class ComentarioService {
                         .orElse(0.0);
     }
 
-
+    /**
+     * //Métodos para obtener la media de puntuaciones de un usuario. -> Usado en: ComentarioQuery.puntuacionesMediasUsuario(...)
+     */
     public Double mediaUsuario(String nombreUsuario, String contrasena) {
         Integer usuarioId = obtenerUsuarioId(nombreUsuario, contrasena);
         List<Comentario> comentarios = comentarioRepository.findByUsuarioId(usuarioId);
@@ -170,8 +195,13 @@ public class ComentarioService {
     // Métodos auxiliares privados
     // -----------------------------
 
+    /**
+     * // Métodos para obtener el ID del usuario y del hotel, validando credenciales contra los microservicios de usuarios.
+     */
     private Integer obtenerUsuarioId(String nombre, String contrasena) {
         Boolean esValido = restTemplate.postForObject(
+                /** Endpoint @PostMapping("/validar") -> validarUsuario
+                 * -> Microservicio Usuarios*/
                 USUARIOS_URL + "/validar",
                 new UsuarioDTO(nombre, contrasena),
                 Boolean.class
@@ -182,21 +212,26 @@ public class ComentarioService {
         }
 
         return restTemplate.getForObject(
+                /** Endpoint @GetMapping("/info/nombre/{nombre}") -> obtenerInfoUsuarioPorNombre
+                 * -> Microservicio Usuarios*/
                 USUARIOS_URL + "/info/nombre/" + nombre,
                 Integer.class
         );
     }
 
+    // Método para obtener el ID del hotel, validando credenciales contra el microservicio de reservas.
     private Integer obtenerHotelId(String nombreHotel, String nombreUsuario, String contrasena) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
-        HotelDTO dto = new HotelDTO(nombreHotel, new UsuarioDTO(nombreUsuario, contrasena));
+        UsuarioDTO usuarioDTO = new UsuarioDTO(nombreUsuario, contrasena);
+        HttpEntity<UsuarioDTO> request = new HttpEntity<>(usuarioDTO, headers);
 
-        HttpEntity<HotelDTO> request = new HttpEntity<>(dto, headers);
-
+        // La URL debe coincidir con el endpoint del microservicio reservas  'obtenerIdApartirNombre'
         String resultado = restTemplate.postForObject(
-                RESERVAS_URL + "/hotel/id",
+                /** Endpoint @PostMapping("/id/{nombreHotel}") -> obtenerIdApartirNombre
+                 * -> Microservicio Reservas*/
+                RESERVAS_URL + "/hotel/id/" + nombreHotel,
                 request,
                 String.class
         );
@@ -208,48 +243,55 @@ public class ComentarioService {
         }
     }
 
+/**    // Método para obtener el nombre del hotel a partir de su ID, validando credenciales contra el microservicio de 'reservas'.
+*/
     private String obtenerNombreHotel(Integer hotelId, String nombreUsuario, String contrasena) {
+        // Crear encabezado JSON
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
-
-        HotelDTO dto = new HotelDTO(null, new UsuarioDTO(nombreUsuario, contrasena));
-        dto.id = hotelId;
-
-        HttpEntity<HotelDTO> request = new HttpEntity<>(dto, headers);
+        // Crear el cuerpo con las credenciales del usuario
+        UsuarioDTO usuarioDTO = new UsuarioDTO(nombreUsuario, contrasena);
+        HttpEntity<UsuarioDTO> request = new HttpEntity<>(usuarioDTO, headers);
+        /**
+         * La URL debe coincidir con el endpoint del microservicio reservas  'obtenerNombreAPartirId'
+         * Endpoint @PostMapping("/nombre/{idHotel}") -> obtenerNombreAPartirId
+         * -> Microservicio Reservas*/
 
         return restTemplate.postForObject(
-                RESERVAS_URL + "/hotel/nombre",
+                RESERVAS_URL + "/hotel/nombre/" + hotelId,
                 request,
                 String.class
         );
     }
 
+    /**
+     * // Método para obtener el ID del hotel a partir de la reserva, validando credenciales contra el microservicio de 'reservas'.
+     */
     private Integer obtenerHotelIdDesdeReserva(Integer reservaId) {
-        return restTemplate.getForObject(
+        return restTemplate.getForObject(//Metodo creado en el microservicio reservas en ReservasController ya que no lo teníamos y no lo pedia en ningun enunciado.
+                /** Endpoint @GetMapping("/hotel/idReserva/{idReserva}") -> obtenerHotelIdDesdeReserva
+                 * -> Microservicio Reservas*/
                 RESERVAS_URL + "/hotel/idReserva/" + reservaId,
                 Integer.class
         );
     }
 
+    /**
+     * // Método para verificar si la reserva es válida, validando credenciales contra el microservicio de 'reservas'.
+     * Enunciado:
+     * Deberá comprobar frente al microservicio reservas (método checkReserva) si la combinación (idUsuario - idHotel - idReserva) existe antes de poder crear el comentario.
+     */
     private boolean checkReserva(Integer usuarioId, Integer hotelId, Integer reservaId) {
         return Boolean.TRUE.equals(restTemplate.getForObject(
+                /** Endpoint @GetMapping("/check") -> checkReserva
+                 * -> Microservicio Reservas*/
                 RESERVAS_URL + "/check?idUsuario=" + usuarioId + "&idHotel=" + hotelId + "&idReserva=" + reservaId,
                 Boolean.class
         ));
     }
 
     // DTO interno para validación de usuario
-    record UsuarioDTO(String nombre, String contrasena) {}
-
-    // DTO interno para solicitud a /hotel/id y /hotel/nombre
-    static class HotelDTO {
-        public Integer id;
-        public String nombre;
-        public UsuarioDTO usuario;
-
-        public HotelDTO(String nombre, UsuarioDTO usuario) {
-            this.nombre = nombre;
-            this.usuario = usuario;
-        }
+    record UsuarioDTO(String nombre, String contrasena) {
     }
+
 }

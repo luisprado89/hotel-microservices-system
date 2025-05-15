@@ -22,13 +22,24 @@ public class HabitacionService {
     private HotelRepository hotelRepository;
 
 
-    // Constructor de la clase
+    /**
+     Endpoint @PostMapping("/habitacion") -> crearHabitacion  - HabitacionController
+     -> Microservicio Reservas
+     */
+    // Metodo para crear una habitación
     public String crearHabitacion(HabitacionDTO dto) {
+        // Validación de campos obligatorios
+        if (dto.getNumeroHabitacion() == null ||
+                dto.getTipo() == null ||
+                dto.getPrecio() == null ||
+                dto.getIdHotel() == null) {
+            return "Error: Todos los campos (numeroHabitacion, tipo, precio, idHotel) son obligatorios.";
+        }
         Optional<Hotel> hotelOpt = hotelRepository.findById(dto.getIdHotel());
         if (hotelOpt.isEmpty()) {
             return "Hotel no encontrado";
         }
-
+        // Verificar si la habitación ya existe
         Habitacion habitacion = new Habitacion();
         habitacion.setHotel(hotelOpt.get());
         habitacion.setNumeroHabitacion(dto.getNumeroHabitacion());
@@ -73,6 +84,12 @@ public class HabitacionService {
 //            return "Error al actualizar la habitación";
 //        }
 //    }
+
+
+    /**
+     Endpoint @PatchMapping("/habitacion") -> actualizarHabitacion  - HabitacionController
+     -> Microservicio Reservas
+     */
     // Método para actualizar una habitación que obliga a pasar todos los campos
     public String actualizarHabitacion(HabitacionDTO dto) {
         // Validar que todos los campos estén completos
@@ -114,10 +131,22 @@ public class HabitacionService {
         }
     }
 
+    /**
+     Endpoint @DeleteMapping("/{id}") -> eliminarHabitacion  - HabitacionController
+     -> Microservicio Reservas
+    */
 
+    /** Metodo anotado de @Transactional porque:
+    - Se accede a la relación de la habitación con sus reservas mediante habitacion.getReservas().
+    - Esa relación probablemente esté configurada como 'lazy' (carga perezosa), y necesita una transacción activa para evitar errores como LazyInitializationException.
+    - Al acceder al tamaño de la lista con .size(), se fuerza la carga de las reservas asociadas antes de eliminar.
+    La transacción garantiza que si ocurre algún fallo durante la operación (por ejemplo, al eliminar),
+    no se dejarán cambios inconsistentes en la base de datos.
+    *
 
+     */
 
-    // Método para eliminar una habitación por su ID
+    // Método para eliminar una habitación por su ID de esta
     @Transactional //Método transaccional para eliminar habitación
     public String eliminarHabitacion(Integer id) {
         Optional<Habitacion> habitacionOpt = habitacionRepository.findById(id);

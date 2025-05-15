@@ -22,6 +22,11 @@ public class UsuarioService {
 //            return "Error al registrar usuario";
 //        }
 //    }
+/**    // Metodo para registrar un nuevo usuario devuelve un mensaje de exito o error obligamos al usuario a ingresar todos los datos, ya que la base de datos, ni la entidad tienen notnull*/
+    /**
+      Endpoint @PostMapping("/registrar") -> crearUsuario
+      -> Microservicio Usuarios
+     */
     public String crearUsuario(Usuario u) {
         if (u == null ||
                 u.getNombre() == null || u.getNombre().isBlank() ||
@@ -39,19 +44,44 @@ public class UsuarioService {
         }
     }
 
+    /**
+      Endpoint @PutMapping("/registrar") -> actualizarUsuario
+      -> Microservicio Usuarios
+     */
 
     // Metodo para actualizar un usuario
     public String actualizarUsuario(Usuario u) {
         if (u.getId() == null || !repo.existsById(u.getId())) {
             return "Usuario no encontrado";
         }
+
         try {
-            repo.save(u);
+            Usuario usuarioExistente = repo.findById(u.getId()).get();
+
+            if (u.getNombre() != null) {
+                usuarioExistente.setNombre(u.getNombre());
+            }
+            if (u.getCorreoElectronico() != null) {
+                usuarioExistente.setCorreoElectronico(u.getCorreoElectronico());
+            }
+            if (u.getDireccion() != null) {
+                usuarioExistente.setDireccion(u.getDireccion());
+            }
+            if (u.getContrasena() != null) {
+                usuarioExistente.setContrasena(u.getContrasena());
+            }
+
+            repo.save(usuarioExistente);
             return "Usuario actualizado correctamente";
         } catch (Exception e) {
             return "Error al actualizar usuario";
         }
     }
+
+    /**
+      Endpoint @DeleteMapping -> eliminarUsuario
+      -> Microservicio Usuarios
+     */
     // Metodo para eliminar un usuario devuelve un mensaje de exito o error
     public String eliminarUsuario(String nombre, String contrasena) {
         Optional<Usuario> usuario = repo.findByNombreAndContrasena(nombre, contrasena);
@@ -62,20 +92,40 @@ public class UsuarioService {
             return "Usuario no encontrado o credenciales incorrectas";
         }
     }
+
+    /**
+      Endpoint @PostMapping("/validar") -> validarUsuario
+      -> Microservicio Usuarios
+     */
     // Metodo para validar un usuario devuelve true si el usuario existe y false si no
     public boolean validarUsuario(String nombre, String contrasena) {
         return repo.findByNombreAndContrasena(nombre, contrasena).isPresent();
     }
+
+    /**
+      Endpoint @GetMapping("/info/id/{id}") -> obtenerInfoUsuarioPorId
+      -> Microservicio Usuarios
+     */
     // Metodo para obtener el nombre de un usuario por su ID
     public String obtenerInfoUsuarioPorId(Integer id) {
         return repo.findById(id).map(Usuario::getNombre).orElse("Usuario no encontrado");
     }
+
+    /**
+      Endpoint @GetMapping("/info/nombre/{nombre}") -> obtenerInfoUsuarioPorNombre
+      -> Microservicio Usuarios
+     */
     // Metodo para obtener el ID de un usuario por su nombre
     public String obtenerInfoUsuarioPorNombre(String nombre) {
         return repo.findByNombre(nombre)
                 .map(u -> String.valueOf(u.getId()))
                 .orElse("Usuario no encontrado");
     }
+
+    /**
+      Endpoint @GetMapping("/checkIfExist/{id}") -> checkIfExist
+      -> Microservicio Usuarios
+     */
     // Metodo para verificar si un usuario existe por su ID
     public boolean checkIfExist(Integer id) {
         return repo.existsById(id);

@@ -33,6 +33,14 @@ public class ReservaController {
     // Endpoint para crear una nueva reserva usando credenciales de usuario y contraseña
     @PostMapping
     public String crearReserva(@RequestBody ReservaDTO dto) {
+        // Validar que se envió el objeto usuario y sus credenciales
+        if (dto.getUsuario() == null ||
+                dto.getUsuario().getNombre() == null ||
+                dto.getUsuario().getContrasena() == null) {
+            return "Error: Credenciales de usuario (nombre y contraseña) obligatorias.";
+        }
+
+        // Validación de credenciales de usuario que sean correctas
         if (!usuariosRestClient.validarCredenciales(dto.getUsuario().getNombre(), dto.getUsuario().getContrasena())) {
             return "Credenciales incorrectas";
         }
@@ -43,6 +51,14 @@ public class ReservaController {
     // Endpoint para actualizar una reserva usando credenciales de usuario y contraseña
     @PatchMapping
     public String cambiarEstado(@RequestBody CambiarEstadoDTO dto) {
+        // Validar que se envió el objeto usuario y sus credenciales
+        if (dto.getUsuario() == null ||
+                dto.getUsuario().getNombre() == null ||
+                dto.getUsuario().getContrasena() == null) {
+            return "Error: Credenciales de usuario (nombre y contraseña) obligatorias.";
+        }
+
+        // Validación de credenciales de usuario que sean correctas
         if (!usuariosRestClient.validarCredenciales(dto.getUsuario().getNombre(), dto.getUsuario().getContrasena())) {
             return "Credenciales incorrectas";
         }
@@ -53,6 +69,14 @@ public class ReservaController {
     // Endpoint para obtener una reserva por su ID usando credenciales de usuario y contraseña
     @GetMapping
     public List<ReservaUsuarioDTO> listarReservasUsuario(@RequestBody UsuarioDTO usuario) {
+        // Validar que se envió el objeto usuario y sus credenciales
+        if (usuario == null ||
+                usuario.getNombre() == null ||
+                usuario.getContrasena() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Credenciales de usuario (nombre y contraseña) obligatorias.");
+        }
+
+        // Validación de credenciales de usuario que sean correctas
         if (!usuariosRestClient.validarCredenciales(usuario.getNombre(), usuario.getContrasena())) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Credenciales incorrectas");//Si se prefiere lanzar una excepción en lugar de devolver un objeto vacío sino comentamos este o lo eliminamos
             //return List.of(); si se prefiere no mostrar el mensaje de error de credenciales incorrectas se descomenta este
@@ -87,6 +111,8 @@ public class ReservaController {
                                 @RequestParam Integer idReserva) {
         return reservaService.checkReserva(idUsuario, idHotel, idReserva);
     }
+
+
     // Se usa en el microservicio de comentarios.
     // Endpoint para obtener el ID del hotel desde la reserva para el Microservicio-Comentarios-->> mostrarComentarioUsuarioReserva
     @GetMapping("/hotel/idReserva/{idReserva}")

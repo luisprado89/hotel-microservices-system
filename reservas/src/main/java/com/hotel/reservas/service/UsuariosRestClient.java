@@ -10,7 +10,7 @@ import org.springframework.http.*;
 public class UsuariosRestClient { // Clase que se encarga de validar las credenciales de un usuario
     // Inyección de dependencias para el cliente REST
     private final RestTemplate restTemplate = new RestTemplate();
-    // URL base del servicio de usuarios
+    // URL base del servicio de usuarios para la comunicacion interna entre microservicios
     @Value("${servicio.usuarios.url:http://localhost:8502}")
     private String baseUrl;
     // Constructor de la clase
@@ -42,4 +42,9 @@ public class UsuariosRestClient { // Clase que se encarga de validar las credenc
             return null;
         }
     }
+    /*
+    Clase UsuariosRestClient es esencial en este microservicio de reservas. Su función principal es actuar como cliente
+     REST del microservicio de usuarios. Proporciona métodos para validar credenciales de usuario y obtener el ID del
+     usuario a partir de su nombre.
+     */
 }

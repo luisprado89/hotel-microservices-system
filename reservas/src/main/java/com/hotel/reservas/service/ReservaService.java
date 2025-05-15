@@ -22,6 +22,13 @@ public class ReservaService { // Clase de servicio para manejar la lógica de ne
     // Inyección de dependencias para el cliente REST de usuarios
     @Autowired
     private UsuariosRestClient usuariosRestClient;
+
+    /**
+     Endpoint @PostMapping -> crearReserva  - ReservaController
+     -> Microservicio Reservas
+     */
+
+
     //Metodo para crear una reserva
     public String crearReserva(Reserva reserva, String nombreUsuario) {
         Optional<Habitacion> habitacion = habitacionRepository.findById(reserva.getHabitacion().getId());
@@ -48,8 +55,17 @@ public class ReservaService { // Clase de servicio para manejar la lógica de ne
         }
     }
 
+    /**
+     Endpoint @PatchMapping -> cambiarEstado  - ReservaController
+     -> Microservicio Reservas
+     */
+
     // Método para cambiar el estado de una reserva
     public String cambiarEstado(Integer reservaId, String estado) {
+        // Validar que el ID de la reserva no sea nulo
+        if (reservaId == null) {
+            return "Error: El ID de la reserva es obligatorio.";
+        }
         Optional<Reserva> reserva = reservaRepository.findById(reservaId);
         if (reserva.isEmpty()) {
             return "Reserva no encontrada";
@@ -64,6 +80,10 @@ public class ReservaService { // Clase de servicio para manejar la lógica de ne
         }
     }
 
+    /**
+     Endpoint @GetMapping -> listarReservasUsuario  - ReservaController
+     -> Microservicio Reservas
+     */
 
     // Método para listar reservas por ID de usuario
     public List<ReservaUsuarioDTO> listarReservasUsuario(String nombreUsuario) {
@@ -79,10 +99,21 @@ public class ReservaService { // Clase de servicio para manejar la lógica de ne
                         reserva.getHabitacion().getId()))
                 .toList();
     }
+
+    /**
+     Endpoint @GetMapping("/{estado}") -> listarReservasSegunEstado  - ReservaController
+     -> Microservicio Reservas
+     */
+
     // Método para listar reservas por estado
     public List<ReservaUsuarioDTO> listarReservasSegunEstado(String estado) {
         return reservaRepository.findByEstado(estado);
     }
+
+    /**
+     Endpoint @GetMapping("/check") -> checkReserva  - ReservaController
+     -> Microservicio Reservas
+     */
     // Método para verificar si una reserva existe por ID de usuario, ID de hotel y ID de reserva
     public boolean checkReserva(Integer usuarioId, Integer hotelId, Integer reservaId) {
         return reservaRepository.existsByIdAndUsuarioIdAndHabitacion_Hotel_Id(reservaId, usuarioId, hotelId);

@@ -9,11 +9,15 @@ import java.math.BigDecimal;
 
 @Data
 public class HabitacionDTO {
-    private Integer id;
+    // DTO usado para crear y actualizar habitaciones
+    // Usado en:
+    // - POST /reservas/habitacion → crearHabitacion()
+    // - PATCH /reservas/habitacion → actualizarHabitacion()
+    private Integer id;  // Solo requerido al actualizar
     private Integer numeroHabitacion;
     private String tipo;
     private BigDecimal precio;
     private Integer idHotel;
-    private Boolean disponible;
-    private UsuarioDTO usuario;  // Usa nombre y contrasena de UsuarioDTO
+    private Boolean disponible;  // Solo requerido al actualizar
+    private UsuarioDTO usuario;  // Usa nombre y contrasena de UsuarioDTO, se usa para validar credenciales del usuario
 }

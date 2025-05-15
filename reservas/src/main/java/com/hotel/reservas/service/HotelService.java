@@ -31,6 +31,11 @@ public class HotelService {
 //            return "Error al crear el hotel";
 //        }
 //    }
+    /**
+     Endpoint @PostMapping -> crearHotel  - HotelController
+     -> Microservicio Reservas
+     */
+
     // Metodo para crear un nuevo hotel obligando a que el nombre y la dirección no estén vacíos
     public String crearHotel(HotelDTO dto) {
         // Validar que los campos no estén vacíos
@@ -55,24 +60,44 @@ public class HotelService {
     //PATCH puede implicar actualización parcial no esta obligado a actualizar todos los campos
     // Método para actualizar un hotel
     public String actualizarHotel(HotelDTO dto) {
+        // Verifica que el ID del hotel esté presente y que el hotel exista
         if (dto.getId() == null || !hotelRepository.existsById(dto.getId())) {
             return "Hotel no encontrado";
         }
 
-        Hotel hotel = new Hotel();
-        hotel.setId(dto.getId());
-        hotel.setNombre(dto.getNombre());
-        hotel.setDireccion(dto.getDireccion());
-
         try {
-            hotelRepository.save(hotel);
+            // Obtener el hotel existente desde la base de datos
+            Hotel hotelExistente = hotelRepository.findById(dto.getId()).get();
+
+            // Solo actualizar los campos que no sean null o vacíos para evitar sobrescribir
+            if (dto.getNombre() != null) {
+                hotelExistente.setNombre(dto.getNombre());
+            }
+            if (dto.getDireccion() != null) {
+                hotelExistente.setDireccion(dto.getDireccion());
+            }
+
+            // Guardar los cambios en la base de datos
+            hotelRepository.save(hotelExistente);
             return "Hotel actualizado correctamente";
         } catch (Exception e) {
             e.printStackTrace();
             return "Error al actualizar el hotel";
         }
     }
+    /**
+     Endpoint @DeleteMapping("/{id}") -> eliminarHotel  - HotelController
+     -> Microservicio Reservas
+     */
 
+
+/** Metodo anotado de @Transactional porque:
+ - Se accede a la relación de la habitación con sus reservas mediante hotel.getHabitaciones().
+ - Esa relación probablemente esté configurada como 'lazy' (carga perezosa), y necesita una transacción activa para evitar errores como LazyInitializationException.
+ - Al acceder al tamaño de la lista con .size(), se fuerza la carga de las habitaciones asociadas antes de eliminar.
+ La transacción garantiza que si ocurre algún fallo durante la operación (por ejemplo, al eliminar),
+ no se dejarán cambios inconsistentes en la base de datos.
+ */
     // Método para eliminar un hotel por su ID
     @Transactional // Anotación que indica que este método es transaccional
     public String eliminarHotel(Integer idHotel) {
@@ -94,6 +119,10 @@ public class HotelService {
             return "Error al eliminar el hotel";
         }
     }
+    /**
+     Endpoint @GetMapping("/id/{nombreHotel}") -> obtenerIdApartirNombre  - HotelController
+     -> Microservicio Reservas
+     */
 
     // Método para obtener el ID de un hotel a partir de su nombre
     public String obtenerIdApartirNombre(String nombreHotel) {
@@ -101,6 +130,11 @@ public class HotelService {
         return hotelOpt.map(h -> String.valueOf(h.getId()))
                 .orElse("Hotel no encontrado");
     }
+
+    /**
+     Endpoint @GetMapping("/nombre/{idHotel}") -> obtenerNombreAPartirId  - HotelController
+     -> Microservicio Reservas
+     */
     // Método para obtener el nombre de un hotel a partir de su ID
     public String obtenerNombreAPartirId(Integer id) {
         Optional<Hotel> hotelOpt = hotelRepository.findById(id);
