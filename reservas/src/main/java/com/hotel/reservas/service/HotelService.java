@@ -17,20 +17,7 @@ public class HotelService {
     private HotelRepository hotelRepository;
 
 
-    // Constructor de la clase
-//    public String crearHotel(HotelDTO dto) {
-//        Hotel hotel = new Hotel();
-//        hotel.setNombre(dto.getNombre());
-//        hotel.setDireccion(dto.getDireccion());
-//
-//        try {
-//            hotelRepository.save(hotel);
-//            return "Hotel creado correctamente";
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return "Error al crear el hotel";
-//        }
-//    }
+
     /**
      Endpoint @PostMapping -> crearHotel  - HotelController
      -> Microservicio Reservas
@@ -43,7 +30,10 @@ public class HotelService {
                 dto.getDireccion() == null || dto.getDireccion().isBlank()) {
             return "Error al crear el hotel: nombre o dirección incompletos";
         }
-
+        //  Verifica si ya existe un hotel con ese nombre y dirección
+        if (hotelRepository.existsByNombreAndDireccion(dto.getNombre(), dto.getDireccion())) {
+            return "Error: Ya existe un hotel con ese nombre y dirección.";
+        }
         Hotel hotel = new Hotel();
         hotel.setNombre(dto.getNombre());
         hotel.setDireccion(dto.getDireccion());

@@ -14,7 +14,8 @@ spring:
     graphiql:
       enabled: true          # Habilita la consola gr�fica de pruebas
       path: /graphiql  # <- este valor DEBE SER /graphiql
-      #path: /comentarios     # La interfaz GraphiQL se abrir� en esta ruta
+
+
 
 eureka:
   client:
@@ -24,3 +25,8 @@ eureka:
     fetch-registry: true
   instance:
     prefer-ip-address: true
+servicio:
+  usuarios:
+    url: http://localhost:8080/usuarios #Necesario para el servicio de usuarios con @Value
+  reservas:
+    url: http://localhost:8080/reservas #Necesario para el servicio de reservas con @Value

@@ -36,10 +36,9 @@ type Mutation {
   crearComentario(input: ComentarioInput!): ComentarioResponse
   # Elimina todos los comentarios del sistema (sin autenticación)
   eliminarComentarios: String
-  # Elimina un comentario específico por su ID del comentario (sin autenticación de usuario y contraseña)
-  eliminarComentarioDeUsuario(id: ID!): String
+
   # Elimina un comentario por su ID del comentario y validando usuario y contraseña
-  eliminarComentarioAutenticado(input: EliminarComentarioInput!): String
+  eliminarComentarioDeUsuario(input: EliminarComentarioInput!): String
 }
 
 # Entrada para eliminar un comentario validando al usuario.

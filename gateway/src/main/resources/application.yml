@@ -33,6 +33,12 @@ spring:
             filters:
               - RewritePath=/comentarios/(?<segment>.*), /${segment}  # Reescribe la URL para que no incluya '/comentarios' al enrutar a los microservicios
 
+          - id: comentarios-graphiql  # Ruta para acceder a la interfaz GraphiQL
+            uri: lb://COMENTARIOS     # Nombre del microservicio 'comentarios' registrado en Eureka
+            predicates:
+             - Path=/graphiql        # Ruta para acceder a la interfaz GraphiQL
+
+
 # Configuracion para conectarse al servidor Eureka
 eureka:
   client:

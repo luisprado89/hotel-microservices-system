@@ -40,26 +40,18 @@ public class ComentarioMutation {
         return comentarioService.eliminarTodos();
     }
 
+
     /**
-      Mutación: eliminarComentarioDeUsuario
-      Elimina un comentario por su ID sin autenticación.
-      Llama a: ComentarioService.eliminarPorId(id)
-     */
-    @MutationMapping
-    public String eliminarComentarioDeUsuario(@Argument String id) {
-        return comentarioService.eliminarPorId(id);
-    }
-    /**
-     * Mutación adicional: eliminarComentarioAutenticado
+     * Mutación adicional: eliminarComentarioDeUsuario
      *
-     * Elimina un comentario si el usuario autenticado es el autor del comentario.
-     * No está explícita en el enunciado pero es útil como mejora de seguridad.
+     * Elimina un comentario si el usuario autenticado.
+     * Respues del correo es que El usuario y la contraseña van en todas las funciones.
      *
      * Llama a: ComentarioService.eliminarPorIdAutenticado(input)
      */
     @MutationMapping
-    public String eliminarComentarioAutenticado(@Argument EliminarComentarioInput input) {
-        return comentarioService.eliminarPorIdAutenticado(input);
+    public String eliminarComentarioDeUsuario(@Argument EliminarComentarioInput input) {
+        return comentarioService.eliminarComentarioDeUsuario(input);
     }
 
 }

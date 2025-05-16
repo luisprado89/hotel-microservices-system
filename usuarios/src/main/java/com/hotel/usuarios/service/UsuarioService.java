@@ -13,16 +13,8 @@ public class UsuarioService {
     // Inyeccion de dependencias para el repositorio de usuarios
     @Autowired
     private UsuarioRepository repo;
-    // Metodo para registrar un nuevo usuario
-//    public String crearUsuario(Usuario u) {
-//        try {
-//            repo.save(u);
-//            return "Usuario registrado correctamente";
-//        } catch (Exception e) {
-//            return "Error al registrar usuario";
-//        }
-//    }
-/**    // Metodo para registrar un nuevo usuario devuelve un mensaje de exito o error obligamos al usuario a ingresar todos los datos, ya que la base de datos, ni la entidad tienen notnull*/
+
+   // Metodo para registrar un nuevo usuario devuelve un mensaje de exito o error obligamos al usuario a ingresar todos los datos, ya que la base de datos, ni la entidad tienen notnull*/
     /**
       Endpoint @PostMapping("/registrar") -> crearUsuario
       -> Microservicio Usuarios
@@ -37,7 +29,7 @@ public class UsuarioService {
         }
 
         try {
-            repo.save(u);
+           repo.save(u);
             return "Usuario registrado correctamente";
         } catch (Exception e) {
             return "Error al registrar usuario";
@@ -57,7 +49,7 @@ public class UsuarioService {
 
         try {
             Usuario usuarioExistente = repo.findById(u.getId()).get();
-
+        // Actualizar solo los campos que no son nulos o vacíos pide al usuario que ingrese todos los datos
             if (u.getNombre() != null) {
                 usuarioExistente.setNombre(u.getNombre());
             }
@@ -78,12 +70,20 @@ public class UsuarioService {
         }
     }
 
+
+
+
+
     /**
       Endpoint @DeleteMapping -> eliminarUsuario
       -> Microservicio Usuarios
      */
     // Metodo para eliminar un usuario devuelve un mensaje de exito o error
     public String eliminarUsuario(String nombre, String contrasena) {
+        // Validar que el nombre y la contraseña no sean nulos o vacíos
+        if (nombre == null || nombre.trim().isEmpty() || contrasena == null || contrasena.trim().isEmpty()) {
+            return "Debe introducir nombre de usuario y contraseña";
+        }
         Optional<Usuario> usuario = repo.findByNombreAndContrasena(nombre, contrasena);
         if (usuario.isPresent()) {
             repo.delete(usuario.get());

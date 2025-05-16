@@ -39,6 +39,11 @@ public class HabitacionService {
         if (hotelOpt.isEmpty()) {
             return "Hotel no encontrado";
         }
+
+        //  VERIFICACIÓN NUEVA para evitar duplicados de (habitación y hotel)
+        if (habitacionRepository.existsByHotelIdAndNumeroHabitacion(dto.getIdHotel(), dto.getNumeroHabitacion())) {
+            return "Error: Ya existe una habitación con ese número en este hotel.";
+        }
         // Verificar si la habitación ya existe
         Habitacion habitacion = new Habitacion();
         habitacion.setHotel(hotelOpt.get());
@@ -55,35 +60,6 @@ public class HabitacionService {
             return "Error al crear la habitación";
         }
     }
-
-
-    // Método para actualizar una habitación
-//    public String actualizarHabitacion(HabitacionDTO dto) {
-//        if (dto.getId() == null || !habitacionRepository.existsById(dto.getId())) {
-//            return "Habitación no encontrada";
-//        }
-//
-//        Optional<Hotel> hotelOpt = hotelRepository.findById(dto.getIdHotel());
-//        if (hotelOpt.isEmpty()) {
-//            return "Hotel no encontrado";
-//        }
-//
-//        Habitacion habitacion = new Habitacion();
-//        habitacion.setId(dto.getId());
-//        habitacion.setHotel(hotelOpt.get());
-//        habitacion.setNumeroHabitacion(dto.getNumeroHabitacion());
-//        habitacion.setTipo(dto.getTipo());
-//        habitacion.setPrecio(dto.getPrecio());
-//        habitacion.setDisponible(dto.getDisponible());
-//
-//        try {
-//            habitacionRepository.save(habitacion);
-//            return "Habitación actualizada correctamente";
-//        } catch (Exception e) {
-//            e.printStackTrace();
-//            return "Error al actualizar la habitación";
-//        }
-//    }
 
 
     /**

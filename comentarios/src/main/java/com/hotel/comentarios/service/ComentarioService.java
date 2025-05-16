@@ -6,6 +6,7 @@ import com.hotel.comentarios.dto.EliminarComentarioInput;
 import com.hotel.comentarios.model.Comentario;
 import com.hotel.comentarios.repository.ComentarioRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -22,10 +23,14 @@ import java.util.stream.Collectors;
 public class ComentarioService {
 
     private final ComentarioRepository comentarioRepository;
+    // Inyectar RestTemplate para hacer peticiones HTTP a otros microservicios
     private final RestTemplate restTemplate;
-
-    private static final String USUARIOS_URL = "http://localhost:8080/usuarios";
-    private static final String RESERVAS_URL = "http://localhost:8080/reservas";
+    // Inyectar la URL del microservicio de usuarios desde el archivo de propiedades
+    @Value("${servicio.usuarios.url:http://localhost:8080/usuarios}")
+    private String USUARIO_URL;
+    // Inyectar la URL del microservicio de reservas desde el archivo de propiedades
+    @Value("${servicio.reservas.url:http://localhost:8080/reservas}")
+    private String RESERVA_URL;
 
     //Método para crear un comentario -> Usado en: ComentarioMutation.crearComentario(...)
     public ComentarioResponse crearComentario(ComentarioInput input) {
@@ -80,24 +85,12 @@ public class ComentarioService {
         }
     }
 
-    /**
-     * //Eliminar un comentario por ID del comentario que es un string(sin autenticación). ->  Usado en: ComentarioMutation.eliminarComentarioDeUsuario(id)
-     * //eliminarComentarioDeUsuario
-     */
-    public String eliminarPorId(String id) {
-        if (!comentarioRepository.existsById(id)) {
-            return "Error: El comentario no existe.";
-        }
-
-        comentarioRepository.deleteById(id);
-        return "Comentario eliminado correctamente.";
-    }
 
     /**
-     * Eliminar un comentario por ID del comentario que es un string -> Usado en: ComentarioMutation.eliminarComentarioAutenticado(...)
+     * Eliminar un comentario por ID del comentario que es un string -> Usado en: ComentarioMutation.eliminarComentarioDeUsuario(...)
      * eliminarComentarioDeUsuario en el caso de que pida usuario y contraseña sino podemos eliminarlo
      */
-    public String eliminarPorIdAutenticado(EliminarComentarioInput input) {
+    public String eliminarComentarioDeUsuario(EliminarComentarioInput input) {
         Integer usuarioId = obtenerUsuarioId(input.getNombreUsuario(), input.getContrasena());
 
         Optional<Comentario> comentarioOpt = comentarioRepository.findById(input.getId());
@@ -202,7 +195,7 @@ public class ComentarioService {
         Boolean esValido = restTemplate.postForObject(
                 /** Endpoint @PostMapping("/validar") -> validarUsuario
                  * -> Microservicio Usuarios*/
-                USUARIOS_URL + "/validar",
+                USUARIO_URL + "/validar",
                 new UsuarioDTO(nombre, contrasena),
                 Boolean.class
         );
@@ -214,7 +207,7 @@ public class ComentarioService {
         return restTemplate.getForObject(
                 /** Endpoint @GetMapping("/info/nombre/{nombre}") -> obtenerInfoUsuarioPorNombre
                  * -> Microservicio Usuarios*/
-                USUARIOS_URL + "/info/nombre/" + nombre,
+                USUARIO_URL + "/info/nombre/" + nombre,
                 Integer.class
         );
     }
@@ -231,7 +224,7 @@ public class ComentarioService {
         String resultado = restTemplate.postForObject(
                 /** Endpoint @PostMapping("/id/{nombreHotel}") -> obtenerIdApartirNombre
                  * -> Microservicio Reservas*/
-                RESERVAS_URL + "/hotel/id/" + nombreHotel,
+                RESERVA_URL + "/hotel/id/" + nombreHotel,
                 request,
                 String.class
         );
@@ -258,7 +251,7 @@ public class ComentarioService {
          * -> Microservicio Reservas*/
 
         return restTemplate.postForObject(
-                RESERVAS_URL + "/hotel/nombre/" + hotelId,
+                RESERVA_URL + "/hotel/nombre/" + hotelId,
                 request,
                 String.class
         );
@@ -271,7 +264,7 @@ public class ComentarioService {
         return restTemplate.getForObject(//Metodo creado en el microservicio reservas en ReservasController ya que no lo teníamos y no lo pedia en ningun enunciado.
                 /** Endpoint @GetMapping("/hotel/idReserva/{idReserva}") -> obtenerHotelIdDesdeReserva
                  * -> Microservicio Reservas*/
-                RESERVAS_URL + "/hotel/idReserva/" + reservaId,
+                RESERVA_URL + "/hotel/idReserva/" + reservaId,
                 Integer.class
         );
     }
@@ -285,7 +278,7 @@ public class ComentarioService {
         return Boolean.TRUE.equals(restTemplate.getForObject(
                 /** Endpoint @GetMapping("/check") -> checkReserva
                  * -> Microservicio Reservas*/
-                RESERVAS_URL + "/check?idUsuario=" + usuarioId + "&idHotel=" + hotelId + "&idReserva=" + reservaId,
+                RESERVA_URL + "/check?idUsuario=" + usuarioId + "&idHotel=" + hotelId + "&idReserva=" + reservaId,
                 Boolean.class
         ));
     }

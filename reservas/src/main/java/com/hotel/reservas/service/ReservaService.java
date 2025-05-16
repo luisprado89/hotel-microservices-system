@@ -31,9 +31,16 @@ public class ReservaService { // Clase de servicio para manejar la lógica de ne
 
     //Metodo para crear una reserva
     public String crearReserva(Reserva reserva, String nombreUsuario) {
+        // Validación de campos obligatorios
+        if (reserva == null || reserva.getFechaInicio() == null || reserva.getFechaFin() == null ||
+                reserva.getHabitacion() == null || reserva.getHabitacion().getId() == null) {
+            return "Error al crear la reserva: fecha de inicio, fecha de fin o ID de habitación incompletos";
+        }
+
+        // Validar que el ID de la habitación no sea nulo
         Optional<Habitacion> habitacion = habitacionRepository.findById(reserva.getHabitacion().getId());
         if (habitacion.isEmpty() || !habitacion.get().getDisponible()) {
-            return "Habitación no disponible";
+            return "No existe una habitación con el ID especificado.";
         }
 
         // Obtener ID del usuario a partir del nombre
@@ -65,6 +72,10 @@ public class ReservaService { // Clase de servicio para manejar la lógica de ne
         // Validar que el ID de la reserva no sea nulo
         if (reservaId == null) {
             return "Error: El ID de la reserva es obligatorio.";
+        }
+        // Validar que el estado no sea nulo ni vacío
+        if (estado == null || estado.isBlank()) {
+            return "Error: El nuevo estado de la reserva es obligatorio.";
         }
         Optional<Reserva> reserva = reservaRepository.findById(reservaId);
         if (reserva.isEmpty()) {
