@@ -17,14 +17,60 @@ El sistema está compuesto por cinco microservicios principales:
 * **Ruta raíz**: `/usuarios`
 * **Rutas y funcionalidades**:
 
-   * `POST /usuarios/registrar` - Crear nuevo usuario
-   * `PUT /usuarios/registrar` - Actualizar usuario
-   * `DELETE /usuarios` - Eliminar usuario (nombre y contraseña)
-   * `POST /usuarios/validar` - Validar credenciales
-   * `GET /usuarios/info/id/{id}` - Obtener nombre a partir de ID
-   * `GET /usuarios/info/nombre/{nombre}` - Obtener ID a partir del nombre
-   * `GET /usuarios/checkIfExist/{id}` - Comprobar si el ID existe
+## ✅ `UsuarioController.java` (Controller)
 
+Este controlador expone los endpoints REST según lo especificado en el enunciado. Cada método del controlador delega la lógica al servicio `UsuarioService`.
+
+- Anotado con `@RestController` y `@RequestMapping("/usuarios")`.
+
+### 📌 Endpoints Implementados
+
+| Método HTTP | Ruta                                | Método de Servicio             | Descripción                                                   |
+|-------------|-------------------------------------|--------------------------------|---------------------------------------------------------------|
+| POST        | `/usuarios/registrar`               | `crearUsuario`                 | Crea un nuevo usuario.                                        |
+| PUT         | `/usuarios/registrar`               | `actualizarUsuario`            | Actualiza los datos de un usuario existente.                 |
+| DELETE      | `/usuarios`                         | `eliminarUsuario`              | Elimina un usuario por nombre y contraseña.                   |
+| POST        | `/usuarios/validar`                 | `validarUsuario`               | Valida las credenciales de un usuario.                        |
+| GET         | `/usuarios/info/id/{id}`            | `obtenerInfoUsuarioPorId`      | Devuelve el nombre de un usuario dado su ID.                 |
+| GET         | `/usuarios/info/nombre/{nombre}`    | `obtenerInfoUsuarioPorNombre`  | Devuelve el ID del usuario dado su nombre.                   |
+| GET         | `/usuarios/checkIfExist/{id}`       | `checkIfExist`                 | Verifica si un usuario con ese ID existe en la base de datos.|
+
+---
+
+## 🔧 `UsuarioService.java` (Service)
+
+Contiene la lógica de negocio. Se encarga de manejar y procesar los datos provenientes del controlador antes de interactuar con la capa de persistencia (`UsuarioRepository`).
+
+### Métodos Clave
+
+#### `crearUsuario(Usuario u)`
+- Valida que los datos no sean nulos.
+- Guarda el usuario con `repo.save(u)`.
+
+#### `actualizarUsuario(Usuario u)`
+- Busca el usuario por ID.
+- Solo actualiza si el usuario existe.
+- Modifica campos individuales y guarda los cambios.
+
+#### `eliminarUsuario(String nombre, String contrasena)`
+- Busca al usuario por nombre y contraseña.
+- Elimina el usuario si coincide.
+
+#### `validarUsuario(String nombre, String contrasena)`
+- Verifica si existe un usuario con ese nombre y contraseña.
+- Devuelve un booleano.
+
+#### `obtenerInfoUsuarioPorId(Integer id)`
+- Devuelve el nombre del usuario si existe.
+- Si no, devuelve `"Usuario no encontrado"`.
+
+#### `obtenerInfoUsuarioPorNombre(String nombre)`
+- Devuelve el ID del usuario como `String`.
+
+#### `checkIfExist(Integer id)`
+- Devuelve `true` o `false` según si el ID existe en la base de datos.
+
+---
 ### 2. **reservas**
 
 * **Descripción**: Servicio REST para gestionar hoteles, habitaciones y reservas. Valida al usuario mediante el microservicio `usuarios`.
@@ -54,6 +100,29 @@ El sistema está compuesto por cinco microservicios principales:
    * `GET` - Listar reservas del usuario
    * `GET /estado/{estado}` - Listar reservas por estado
    * `GET /check?idUsuario=&idHotel=&idReserva=` - Validar combinación reserva
+## ✅ Verificación de Endpoints del Microservicio `reservas`
+
+| Funcionalidad                      | Ruta esperada                              | Método HTTP | Implementado | Comentario                                                  |
+|-----------------------------------|--------------------------------------------|-------------|--------------|-------------------------------------------------------------|
+| Crear reserva                     | `/reservas`                                | POST        | ✅            | Usa `ReservaDTO` + validación de credenciales              |
+| Cambiar estado de reserva         | `/reservas`                                | PATCH       | ✅            | Usa `CambiarEstadoDTO`                                     |
+| Listar reservas por usuario       | `/reservas`                                | GET         | ✅            | Requiere `UsuarioDTO` con credenciales                     |
+| Listar reservas por estado        | `/reservas/{estado}`                        | GET         | ✅            | Recibe `estado` en la URL y valida credenciales            |
+| Verificar reserva                 | `/reservas/check`                           | GET         | ✅            | No requiere validación de credenciales                     |
+| Crear hotel                       | `/reservas/hotel`                           | POST        | ✅            | Usa `HotelDTO` con validación                              |
+| Actualizar hotel                  | `/reservas/hotel`                           | PATCH       | ✅            | Validación correcta, actualización parcial                 |
+| Eliminar hotel                    | `/reservas/hotel/{id}`                      | DELETE      | ✅            | Incluye validación y `@Transactional` para relaciones LAZY |
+| Obtener ID por nombre del hotel   | `/reservas/hotel/id/{nombre}`              | POST        | ✅            | OK                                                          |
+| Obtener nombre por ID del hotel   | `/reservas/hotel/nombre/{id}`              | POST        | ✅            | OK                                                          |
+| Crear habitación                  | `/reservas/habitacion`                      | POST        | ✅            | OK                                                          |
+| Actualizar habitación             | `/reservas/habitacion`                      | PATCH       | ✅            | OK                                                          |
+| Eliminar habitación               | `/reservas/habitacion/{id}`                | DELETE      | ✅            | OK                                                          |
+
+✅ **Endpoint adicional implementado**:
+- `/reservas/hotel/idReserva/{idReserva}` → Devuelve el `hotelId` asociado a una reserva específica.
+- **Uso previsto**: integración con el microservicio `comentarios` para validación cruzada.
+- **Comentario**: Este endpoint extra es una mejora funcional que aporta valor al sistema.
+
 
 ### 3. **comentarios**
 
@@ -153,6 +222,119 @@ input EliminarComentarioInput {
   contrasena: String!
 }
 ```
+# Análisis Detallado del Microservicio "Comentarios"
+
+## Paquete Principal: `com.hotel.comentarios`
+
+### 1. `ComentariosApplication.java`
+- **Tipo**: Clase principal con `@SpringBootApplication`.
+- **Responsabilidad**:
+  - Inicia la aplicación Spring Boot.
+  - Declara un `@Bean` de tipo `RestTemplate` que se usará para hacer peticiones HTTP a los otros microservicios (usuarios y reservas).
+- **Clave**: Sin `RestTemplate` no se podrían validar usuarios ni verificar reservas.
+
+---
+
+## Paquete `dto` (Data Transfer Objects)
+
+### 2. `ComentarioInput.java`
+- **Tipo**: DTO de entrada.
+- **Responsabilidad**:
+  - Representa los datos necesarios para crear un comentario: usuario, contraseña, hotel, reserva, puntuación, texto.
+- **Usado en**: `ComentarioMutation.crearComentario(...)`.
+
+### 3. `ComentarioResponse.java`
+- **Tipo**: DTO de salida.
+- **Responsabilidad**:
+  - Devuelve al cliente datos amigables: nombre del hotel, `reservaId`, puntuación y comentario.
+- **Usado en**: Todas las `Query` y la `Mutation` de creación.
+
+### 4. `EliminarComentarioInput.java`
+- **Tipo**: DTO de entrada.
+- **Responsabilidad**:
+  - Usado para validar la eliminación de un comentario autenticando al usuario (requiere ID del comentario, usuario y contraseña).
+- **Usado en**: `ComentarioMutation.eliminarComentarioDeUsuario(...)`.
+
+---
+
+## Paquete `model`
+
+### 5. `Comentario.java`
+- **Tipo**: Modelo de documento de MongoDB (`@Document`).
+- **Responsabilidad**:
+  - Representa cómo se guarda el comentario en la colección `comentarios` en MongoDB.
+  - Contiene los campos: `usuarioId`, `hotelId`, `reservaId`, `puntuacion`, `comentario`, y `fechaCreacion` (de tipo `Instant` para MongoDB).
+
+---
+
+## Paquete `repository`
+
+### 6. `ComentarioRepository.java`
+- **Tipo**: `MongoRepository`.
+- **Responsabilidad**:
+  - Permite acceder y manipular la colección `comentarios`.
+- **Métodos personalizados**:
+  - `existsByUsuarioIdAndHotelIdAndReservaId(...)`: Evita comentarios duplicados.
+  - `findByHotelId(...)`, `findByUsuarioId(...)`: Para búsquedas por hotel o usuario.
+  - `findByUsuarioIdAndHotelIdAndReservaId(...)`: Obtener un comentario único.
+
+---
+
+## Paquete `service`
+
+### 7. `ComentarioService.java`
+- **Tipo**: Servicio principal.
+- **Responsabilidad**:
+  - Implementa toda la lógica de negocio:
+    - **Validación de usuario** (`obtenerUsuarioId`).
+    - **Validación de hotel** (`obtenerHotelId`).
+    - **Validación de reserva** (`checkReserva`).
+    - **Creación de comentario** con prevención de duplicados.
+    - **Eliminación total o individual** de comentarios (autenticación requerida).
+    - Consultas: comentarios por usuario, hotel, reserva, medias por usuario y hotel.
+- **Comunicación con otros microservicios**:
+  - Usa `RestTemplate` para comunicarse con:
+    - **Microservicio de usuarios** (validar credenciales, obtener ID).
+    - **Microservicio de reservas** (obtener ID o nombre de hotel, validar reserva).
+
+---
+
+## Paquete `resolver`
+
+### 8. `ComentarioQuery.java`
+- **Tipo**: Resolver de consultas (GraphQL).
+- **Responsabilidad**:
+  - Expone las siguientes `QueryMapping`:
+    - `listarComentariosUsuario(...)`
+    - `listarComentariosHotel(...)`
+    - `mostrarComentarioUsuarioReserva(...)`
+    - `puntuacionMediaHotel(...)`
+    - `puntuacionesMediasUsuario(...)`
+  - Llama a métodos del servicio que internamente validan al usuario y extraen la información.
+
+### 9. `ComentarioMutation.java`
+- **Tipo**: Resolver de mutaciones (GraphQL).
+- **Responsabilidad**:
+  - Expone las siguientes `MutationMapping`:
+    - `crearComentario(...)`
+    - `eliminarComentarios()`
+    - `eliminarComentarioDeUsuario(...)`
+  - Llama a los métodos de servicio para validar, crear y eliminar comentarios.
+
+---
+
+## Comunicación entre Microservicios
+
+Este microservicio no funciona de forma aislada. Se comunica con otros microservicios para validar y consultar información:
+
+| Servicio Destino | Endpoint Llamado                                       | Propósito                                                   |
+|-------------------|--------------------------------------------------------|-------------------------------------------------------------|
+| **Usuarios**      | `/validar`, `/info/nombre/{nombre}`                    | Validar credenciales y obtener ID del usuario               |
+| **Reservas**      | `/hotel/id/{nombre}`, `/hotel/nombre/{id}`, `/check`, `/hotel/idReserva/{idReserva}` | Validar hotel, obtener nombre/ID, comprobar reservas        |
+
+---
+
+Este documento describe la estructura y funcionamiento del microservicio de comentarios, incluyendo las clases clave, métodos de interacción y la comunicación con otros microservicios esenciales para su funcionamiento.
 
 ### 4. **eureka-server**
 

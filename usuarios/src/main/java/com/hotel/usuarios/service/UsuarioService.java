@@ -27,9 +27,13 @@ public class UsuarioService {
                 u.getContrasena() == null || u.getContrasena().isBlank()) {
             return "Error al registrar usuario: datos incompletos";
         }
-
+/**
+ * repo.save(u)
+ * aunque no veamos el método save() en  UsuarioRepository, está disponible porque está heredando de JpaRepository, que lo define.
+ * Esto es parte de la “magia” de Spring Data JPA: la interfaz que tú defines es suficiente. Spring se encarga de implementar los métodos en tiempo de ejecución (a través de proxies dinámicos).
+ */
         try {
-           repo.save(u);
+           repo.save(u);// Guardar el usuario en la base de datos
             return "Usuario registrado correctamente";
         } catch (Exception e) {
             return "Error al registrar usuario";
@@ -85,8 +89,8 @@ public class UsuarioService {
             return "Debe introducir nombre de usuario y contraseña";
         }
         Optional<Usuario> usuario = repo.findByNombreAndContrasena(nombre, contrasena);
-        if (usuario.isPresent()) {
-            repo.delete(usuario.get());
+        if (usuario.isPresent()) {// Verificar si el usuario existe con las credenciales proporcionadas
+            repo.delete(usuario.get());// Eliminar el usuario de la base de datos
             return "Usuario eliminado correctamente";
         } else {
             return "Usuario no encontrado o credenciales incorrectas";
